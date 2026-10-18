@@ -45,8 +45,13 @@ the upstream app. Highlights:
   is never upscaled or blurry.
 - **SEO and sharing**: proper meta tags, Open Graph, Twitter card, canonical
   URL, JSON-LD, `robots.txt` and `sitemap.xml`.
-- **Works offline-first where possible**: cached API responses and offline
-  states.
+- **Save articles for offline reading**: a **Save** button next to the
+  article's Contents/Gallery actions (also in the article's Options menu)
+  stores the article in IndexedDB and its images in the browser cache. Saved
+  articles are listed under **Settings → Saved articles** and, when there is no
+  connection, from the home screen.
+- **Installable PWA**: a web app manifest and a service worker cache the app
+  itself, so it opens and shows saved articles with no internet at all.
 
 ## Stack
 
@@ -121,10 +126,41 @@ and can be changed again straight away — no reload:
   `html[data-touch]` so the styles follow along.
 - Values persist in `localStorage`, with an in-memory fallback when storage is
   unavailable (private mode, quota). Preferences are a handful of bytes, so
-  `localStorage` is the right store; `IndexedDB` only becomes worth its async
-  complexity for large payloads such as a future offline article cache.
+  `localStorage` is the right store; `IndexedDB` is used for the large
+  payloads: the saved articles (below).
 - Handlers that the softkey bar holds on to read the current value from the
   store, so a preference can be toggled repeatedly without going stale.
+
+## Saved articles and offline use
+
+Articles can be saved individually and read later without internet:
+
+- **Save**: on an article, press the bookmark **Save** action beside Contents
+  (or Options → *Save for offline*). It turns into **Saved**; press it again to
+  remove the article. Saved articles show up under **Settings → Saved
+  articles**, where *Read* opens one and *Remove* deletes it.
+- **Storage**: the parsed article (sections, contents, references, infobox)
+  goes into IndexedDB (`wikipedia-saved` / `articles`). Its images (lead image,
+  figures, infobox) are downloaded into the `saved-article-images` Cache
+  Storage bucket in the background, four at a time; an image that fails never
+  blocks the save. Removing an article drops its images unless another saved
+  article still uses them. The logic is ReScript (`src/res/SavedArticles.res`)
+  behind a thin JS wrapper (`src/utils/savedArticles.js`).
+- **Reading offline**: when the browser is offline, `useArticle` opens the
+  saved copy straight away; online, it falls back to the saved copy if the
+  requests fail. The home screen's offline panel shows an *N saved articles*
+  shortcut.
+- **PWA**: `manifest.webmanifest` makes the web app installable, and the
+  service worker (`pwa/sw.js`, written to `dist/sw.js` at build time with the
+  list of files to cache) caches the app shell. Pages are network-first with
+  the cached shell as the offline fallback, hashed assets are cache-first, and
+  Wikimedia images are answered from the saved-image cache. It is registered
+  only on http(s) production builds; the KaiOS package is already installed
+  locally and skips it. Saving still works on KaiOS (IndexedDB), but images are
+  only kept offline on the web build.
+
+Things not available offline: search, links to articles that are not saved,
+the gallery's image details and the language list.
 
 ## Desktop card grid
 
@@ -172,7 +208,14 @@ restyles two cards per keypress instead of all of them.
 ## Deploying the web app
 
 The web build is deployed to Vercel as a static site (`vercel.json` runs
-`bun install` + `bun run build` and serves `dist/`).
+`bun install` + `bun run build` and serves `dist/`). `sw.js` is served with
+`Cache-Control: no-cache` so new deployments reach installed copies.
+
+To try the production build locally with the same request settings as Vercel:
+
+```sh
+bun run build:ci && bun run preview
+```
 
 ```sh
 bunx vercel --prod

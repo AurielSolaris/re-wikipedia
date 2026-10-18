@@ -4,22 +4,48 @@ import {
   getArticle, getArticleSummary, getArticleMediaList,
   getSuggestedArticles, getLanglinks, leadImageWidth
 } from 'api'
-import { canonicalizeTitle, thumbUrl } from 'utils'
+import { canonicalizeTitle, thumbUrl, savedArticles } from 'utils'
 
 export const useArticle = (lang, title) => {
   const [article, setArticle] = useState(null)
   const contentI18n = useI18n(lang)
 
   let abortFunctions = []
+  let cancelled = false
 
   const abortAll = () => {
+    cancelled = true
     if (abortFunctions) {
       abortFunctions.forEach(f => f())
     }
   }
 
+  // The copy saved for offline reading, if there is one.
+  const loadSaved = () => savedArticles.isSupported()
+    ? savedArticles.get(lang, title)
+      .then(record => record && record.article ? { ...record.article, isSavedCopy: true } : null, () => null)
+    : Promise.resolve(null)
+
   const loadArticle = () => {
+    cancelled = false
     setArticle(null)
+    // Offline: go straight to the saved copy instead of waiting for requests
+    // that cannot succeed.
+    if (navigator.onLine === false) {
+      loadSaved().then(saved => {
+        if (cancelled) return
+        if (saved) {
+          setArticle(saved)
+        } else {
+          loadFromNetwork()
+        }
+      })
+      return
+    }
+    loadFromNetwork()
+  }
+
+  const loadFromNetwork = () => {
     const [articlePromise, articleAbort] = getArticle(lang, title)
     const [summaryPromise, summaryAbort] = getArticleSummary(lang, title)
     const [mediaPromise, mediaAbort] = getArticleMediaList(lang, title)
@@ -54,7 +80,9 @@ export const useArticle = (lang, title) => {
 
         setArticle({ ...article, title, sections: sectionsWithFooter, toc: tocWithFooter, suggestedArticles, media })
       }, error => {
-        setArticle({ error })
+        loadSaved().then(saved => {
+          if (!cancelled) setArticle(saved || { error })
+        })
       })
   }
 

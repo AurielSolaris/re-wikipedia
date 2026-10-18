@@ -124,5 +124,18 @@
 	"settings-theme": "Label of the theme setting in Settings. Activating it cycles the theme.",
 	"theme-auto": "Theme option: follow the device/system colour scheme.",
 	"theme-light": "Theme option: always use the light colour scheme.",
-	"theme-dark": "Theme option: always use the dark colour scheme."
+	"theme-dark": "Theme option: always use the dark colour scheme.",
+	"article-action-save": "The action button on the first page of an article that saves it for reading without an internet connection.",
+	"article-action-saved": "Label of the save action button once the article has been saved for offline reading.",
+	"header-saved": "The header title of the page listing articles saved for offline reading.",
+	"saved-empty": "Message shown on the saved articles page when no article has been saved yet.",
+	"saved-remove-title": "Title of the confirmation dialog shown before removing a saved article.",
+	"saved-remove-message": "Message of the confirmation dialog shown before removing a saved article.\n\nParameters:\n* $1 - the article title",
+	"softkey-remove": "Softkey label that removes the selected saved article.\n{{Identical|Remove}}",
+	"softkey-open": "Center key label that opens the saved articles page from the offline screen.\n{{Identical|Open}}",
+	"settings-saved": "Settings item that opens the list of articles saved for offline reading.",
+	"menu-save": "Article menu item that saves the current article for offline reading.",
+	"menu-unsave": "Article menu item that removes the current article from the saved articles.",
+	"menu-saved-articles": "Article menu item that opens the list of articles saved for offline reading.",
+	"offline-saved-articles": "Shortcut shown on the offline screen that opens the saved articles.\n\nParameters:\n* $1 - number of saved articles"
 }

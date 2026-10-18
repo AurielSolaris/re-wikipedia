@@ -16,6 +16,7 @@ const Settings = lazyComponent(() => import('./Settings'), 'Settings')
 const Tips = lazyComponent(() => import('./Tips'), 'Tips')
 const Article = lazyComponent(() => import('./Article'), 'Article')
 const Language = lazyComponent(() => import('./Language'), 'Language')
+const Saved = lazyComponent(() => import('./Saved'), 'Saved')
 
 export const Routes = ({ onRouteChange }) => {
   const onChange = ({ url }) => {
@@ -33,6 +34,7 @@ export const Routes = ({ onRouteChange }) => {
         <Tips path='/tips' />
         <Article path='/article/:lang/:title/:anchor?' />
         <Language path='/language' />
+        <Saved path='/saved' />
       </Router>
     </Suspense>
   )

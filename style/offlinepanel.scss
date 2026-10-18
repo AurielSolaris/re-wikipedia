@@ -10,5 +10,24 @@
 		.message {
 			font-size: 17px;
 		}
+
+		// Shortcut to the articles saved for offline reading.
+		.saved-link {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 6px;
+			margin-top: 16px;
+			padding: 8px 14px;
+			border-radius: 18px;
+			color: var( --w-accent );
+			font-weight: bold;
+			cursor: pointer;
+
+			&[nav-selected='true'] {
+				outline: solid 2px var( --w-accent );
+				background-color: var( --w-accent-subtle );
+			}
+		}
 	}
 }

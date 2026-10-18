@@ -35,7 +35,23 @@ index.html
   canonical, theme-color light/dark, JSON-LD), Apple meta (web-app-capable,
   safe-area via viewport-fit=cover), font/API preconnects, <div class="root">
   and <script type="module" src="/src/index.js">. Entry page declared in
-  manifest.webapp (launch_path).
+  manifest.webapp (launch_path). Links manifest.webmanifest (marked vite-ignore
+  so Vite leaves it at the root instead of fingerprinting it into assets/).
+
+manifest.webmanifest
+  Web app (PWA) manifest: name, standalone display, theme colours and icons
+  (images/icon-192.png, icon-512.png, also maskable). Copied into dist/ by
+  vite.config.mjs. Not used by the KaiOS package (that is manifest.webapp).
+
+pwa/sw.js
+  Service worker template for the web build. vite.config.mjs writes it to
+  dist/sw.js with VERSION and the PRECACHE list (index.html, the manifest, the
+  modern chunks, images/) filled in. Install caches that app shell; navigations
+  are network-first with the cached shell as the offline fallback; assets and
+  images are cache-first; Wikimedia images are answered from the
+  'saved-article-images' cache that src/res/SavedArticles.res fills when an
+  article is saved. Registered by src/index.js on http(s) production builds
+  only (never on KaiOS app://).
 
 robots.txt, sitemap.xml
   Crawler files for the web deployment, copied into dist/ by vite.config.mjs.
@@ -59,7 +75,8 @@ vite.config.mjs
   Build config. Entry ./src/index.js -> dist/assets/*. Preact preset (JSX in
   .js via Babel), @vitejs/plugin-legacy (Firefox >= 37), SCSS, aliases above,
   rolldown codeSplitting (vendor-preact / vendor-i18n / vendor-react), a
-  copyStatic plugin (images/, manifest.webapp, robots.txt, sitemap.xml) and
+  copyStatic plugin (images/, manifest.webapp, robots.txt, sitemap.xml,
+  manifest.webmanifest) that then generates dist/sw.js from pwa/sw.js, and
   `define` globals: APP_VERSION, CIRCLE_SHA1, INSTRUMENTATION, RANDOM,
   TARGET_STORE, DISABLE_REQUEST_HEADER (consumed by src/utils/*).
 
@@ -73,12 +90,18 @@ src/res/*.res (compiled *.res.mjs are generated, never edited)
   ThumbSize.res   Standard Wikimedia thumbnail widths + rounding (fixImgSrc).
   Preference.res  Observable preference store (theme, touch/click).
   GridNav.res     Desktop card-grid navigation maths (useNavigation).
+  SavedArticles.res  Offline article store: IndexedDB bindings (text) + Cache
+                  Storage (images), save/get/isSaved/list/remove/subscribe,
+                  image URL collection and the Saved list rows
+                  (utils/savedArticles.js, components/Saved.js).
 
 vercel.json
   Web deployment: bun install/build, output dist, VITE_BASE=/ and
   DISABLE_REQUEST_HEADER=1, security + asset cache headers, and an SPA rewrite
-  that leaves robots.txt / sitemap.xml / manifest.webapp / assets / images
-  untouched.
+  that leaves robots.txt / sitemap.xml / manifest.webapp /
+  manifest.webmanifest / sw.js / assets / images untouched. sw.js is served
+  with Cache-Control: no-cache so service worker updates are picked up, and
+  the web manifest with its application/manifest+json type.
 
 package.json
   Scripts: build / build:ci (rescript build + vite build), dev, preview,
@@ -130,7 +153,9 @@ src/index.js  (entry point)
   language, loads all i18n messages + consent messages, computes text direction,
   and renders <App i18n={banana} dir={dir}> into .root. Also initialises the
   theme and touch/click preferences before first paint (initTheme,
-  initTouchSupport). Connects: utils, components/App, style/style.scss.
+  initTouchSupport). On http(s) production builds it registers the service
+  worker (sw.js, see pwa/sw.js). Connects: utils, components/App,
+  style/style.scss.
 
 ------------------------------------------------------------------------------
  src/reducers/  - softkey state machine
@@ -227,8 +252,15 @@ useArticlePreviewTracking.js
 useArticle.js
   Loads a full article: fires getArticle, getArticleSummary, getArticleMediaList,
   getSuggestedArticles, getLanglinks in parallel, merges results, appends the
-  footer section, and exposes [article, reload]. Depends on api/* and utils.
-  Consumed by components/Article.
+  footer section, and exposes [article, reload]. Falls back to the copy saved
+  for offline reading (utils/savedArticles) when offline (navigator.onLine is
+  false: no requests are made) or when the requests fail. Depends on api/* and
+  utils. Consumed by components/Article.
+
+useSavedArticle.js
+  useSavedArticle(lang, title) -> [isSaved, toggle(article), busy] and
+  useSavedArticleList() -> saved summaries (newest first), both kept in sync
+  through savedArticles.subscribe. Used by Article, Saved, Search.
 
 useArticleSummary.js
   Loads just the summary (api/getArticleSummary) for previews.
@@ -360,7 +392,9 @@ skipArticleIntro.js skipIntroAnchor ('wpSkipIntro') + isAnchorIntroSkip, used
 openExternal.js    Opens a URL via MozActivity (device) or window.open.
                    Used by useArticleLinksNavigation, goto, Feedback, Settings,
                    Gallery, AboutApp.
-goto.js            Navigation helpers: article/search/settings/tips route(),
+savedArticles.js   Thin wrapper over src/res/SavedArticles.res: the IndexedDB
+                   store of articles saved for offline reading.
+goto.js            Navigation helpers: article/search/settings/tips/saved route(),
                    termsOfUse + privacyPolicy (openExternal), back(). Used by
                    almost every view.
 
@@ -411,7 +445,7 @@ App.js
 
 Routes.js
   preact-router hash routes: /onboarding, / (Search), /settings, /tips,
-  /article/:lang/:title/:anchor?, /language. Redirects to /onboarding until
+  /article/:lang/:title/:anchor?, /language, /saved. Redirects to /onboarding until
   onboarding is done. Uses utils/onboarding. Mounted by App.
 
 Softkey.js
@@ -428,17 +462,22 @@ Search.js          Home/search view: input + results list, offline panel, consen
                    popup, random article, tracking. Uses components/ListView,
                    OfflinePanel, Consent, SearchLoading; many hooks; utils;
                    api/getRandomArticleTitle. Also exports goToRandomArticle
-                   (used by Tips).
+                   (used by Tips). Offline, the panel offers a shortcut to
+                   the saved articles.
 Article.js         Article reader: fetches article, renders one section at a
-                   time with pagination, link navigation, actions (TOC, gallery,
-                   languages, share), popups (TOC, language, menu, quickfacts,
+                   time with pagination, link navigation, actions (TOC, save
+                   for offline, gallery, languages, share), popups (TOC,
+                   language, menu, quickfacts,
                    gallery, reference, table), history + tracking. Also renders
                    the lead image as <img class='article-hero'> (hidden on
                    KaiOS, where the section itself is the cover-background hero;
                    the leftover offset for that layout is applied only below
                    900px). Uses many components/hooks/utils. The hub for
                    sub-components below.
-Settings.js        Settings list -> Language route, Feedback, AboutWikipedia,
+Saved.js           Articles saved for offline reading: list (rows built by
+                   SavedArticles.res listItemOf), Read opens one, Remove asks
+                   to confirm then deletes it. Route /saved.
+Settings.js        Settings list -> Saved articles + Language routes, Feedback, AboutWikipedia,
                    AboutApp, PrivacyTerms popups. Uses ListView + usePopup.
 Tips.js            Tips list + Read/Search/Switch/About tip popups; "try"
                    actions call goToRandomArticle / goto.search.
@@ -453,7 +492,8 @@ ArticleFooter.js   "Read more" suggested articles + license + view-in-browser
 ArticleLanguage.js Article-language picker popup; uses useSearchArticleLanguage
                    and goto.article to switch language.
 ArticleLoading.js  Article-specific loading wrapper around Loading.
-ArticleMenu.js     Article options menu popup (search, previous, sections,
+ArticleMenu.js     Article options menu popup (search, previous, save for
+                   offline / remove from saved, saved articles, sections,
                    text size, quick facts, gallery, languages, share). Uses
                    TextSize popup + articleHistory.
 ArticlePreview.js  Link-hover preview popup showing summary; "read" opens the
@@ -483,7 +523,8 @@ RadioListView.js   List with radio selection indicator. Used by Language.
 Loading.js         Animated planet loading screen + message. Base for other
                    loaders.
 OfflineIndicator.jsTop banner shown briefly when connectivity drops.
-OfflinePanel.js    Full offline placeholder (used by Search + Feedback).
+OfflinePanel.js    Full offline placeholder (used by Search + Feedback); with
+                   savedCount it adds a selectable "N saved articles" row.
 PrivacyTerms.js    Privacy/Terms list popup (used by Settings).
 TextSize.js        Text-size slider popup; persists via articleTextSize and
                    FontContext/DirectionContext.
@@ -506,8 +547,9 @@ index.js
 ===============================================================================
  images/  - STATIC ASSETS
 ===============================================================================
-  Icons (icon-*.svg, arrow.svg, link.svg, w.svg), app/store icons (56/84/
-  112px.png, img_wikipedia.jpg at root), loading animation SVGs, offline.svg,
+  Icons (icon-*.svg, arrow.svg, link.svg, w.svg; icon-save/icon-saved.svg for
+  the article save action), app/store icons (56/84/112px.png, PWA
+  icon-192/icon-512.png, img_wikipedia.jpg at root), loading animation SVGs, offline.svg,
   onboarding illustrations/backgrounds, tip-*.gif animations, wordmark.
   Referenced directly by component JSX (e.g. `images/icon-sections.svg`) and by
   LESS.
@@ -523,7 +565,7 @@ index.js
     views:     aboutapp, aboutwikipedia, article, articlelanguage, consent,
                 error, feedback, footer, gallery, language, menu, notice,
                 offline, offlinepanel, onboarding, preview, privacyterms,
-                quickfacts, reference, search, settings, table, textsize, tips,
+                quickfacts, reference, saved, search, settings, table, textsize, tips,
                 toc
     responsive last (large-screen overrides)
   Each SCSS file styles the component/view of the same name. tokens.scss holds
@@ -552,6 +594,10 @@ index.js
                   ArticleMediaList,SuggestedArticles,Langlinks} ->
                   utils/cachedFetch -> utils/mwApi URLs -> Wikipedia.
   Navigation:     goto.js -> preact-router route() -> Routes.js -> view.
+  Offline:        Save action -> useSavedArticle -> utils/savedArticles ->
+                  res/SavedArticles (IndexedDB + 'saved-article-images'
+                  cache); offline, useArticle reads it back and sw.js serves
+                  the app shell and the cached images.
   Analytics:      useTracking / useArticlePreviewTracking / consent ->
                   utils/sendEvent|sendLegacyEvent|sendErrorLog -> sendBeacon.
   Build:          Vite `define` globals -> utils/{featureFlags,appVersion,

@@ -14,9 +14,9 @@ import { Table } from './Table'
 import {
   useArticle, useI18n, useSoftkey,
   useArticlePagination, useArticleLinksNavigation,
-  usePopup, useTracking, useConfirmDialog
+  usePopup, useTracking, useConfirmDialog, useSavedArticle
 } from 'hooks'
-import { articleHistory, goto, viewport, buildWpMobileWebUrl } from 'utils'
+import { articleHistory, goto, viewport, buildWpMobileWebUrl, savedArticles } from 'utils'
 import { FontContext } from 'contexts'
 
 const ArticleBody = memo(({ content }) => {
@@ -41,8 +41,8 @@ const ArticleActions = memo(({ actions, lang }) => {
     <div class='article-actions'>
       { actions.filter(a => a.enabled).map(action => (
         <div class='article-actions-button' data-action={action.name} key={action.name}>
-          <img src={`images/icon-${action.name}.svg`} />
-          <label>{contentI18n(`article-action-${action.name}`)}</label>
+          <img src={`images/icon-${action.icon || action.name}.svg`} alt='' />
+          <label>{contentI18n(`article-action-${action.label || action.name}`)}</label>
         </div>
       )) }
     </div>
@@ -154,6 +154,7 @@ const ArticleInner = ({ lang, articleTitle, initialAnchor }) => {
   const i18n = useI18n()
   const containerRef = useRef()
   const [article, loadArticle] = useArticle(lang, articleTitle)
+  const [isSaved, toggleSaved] = useSavedArticle(lang, articleTitle)
 
   if (!article) {
     return <ArticleLoading />
@@ -214,8 +215,14 @@ const ArticleInner = ({ lang, articleTitle, initialAnchor }) => {
     })
   }
 
+  const canSave = savedArticles.isSupported()
+  const toggleSavedArticle = () => toggleSaved(article)
+
   const showArticleMenu = () => {
     showMenuPopup({
+      onSaveToggle: toggleSavedArticle,
+      isSaved: !!isSaved,
+      isSaveEnabled: canSave,
       onTocSelected: showArticleTocPopup,
       onLanguageSelected: showArticleLanguagePopup,
       onQuickFactsSelected: showQuickFacts,
@@ -258,6 +265,13 @@ const ArticleInner = ({ lang, articleTitle, initialAnchor }) => {
 
   const actions = currentSection === 0 ? [
     { name: 'sections', enabled: true, handler: showArticleTocPopup },
+    {
+      name: 'save',
+      icon: isSaved ? 'saved' : 'save',
+      label: isSaved ? 'saved' : 'save',
+      enabled: canSave,
+      handler: toggleSavedArticle
+    },
     { name: 'gallery', enabled: !!article.media.length, handler: showGallery },
     { name: 'languages', enabled: article.languageCount, handler: showArticleLanguagePopup },
     { name: 'share', enabled: sharedEnabled, handler: shareArticleUrl }

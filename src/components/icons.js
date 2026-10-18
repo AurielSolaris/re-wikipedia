@@ -210,3 +210,16 @@ export const WifiOffIcon = props => (
     <path d='m2 2 20 20' />
   </Icon>
 )
+
+export const BookmarkIcon = props => (
+  <Icon {...props}>
+    <path d='m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z' />
+  </Icon>
+)
+
+export const BookmarkCheckIcon = props => (
+  <Icon {...props}>
+    <path d='m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z' />
+    <path d='m9 10 2 2 4-4' />
+  </Icon>
+)

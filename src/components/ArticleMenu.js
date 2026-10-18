@@ -6,15 +6,16 @@ import { ListView } from './ListView'
 import { TextSize } from './TextSize'
 import {
   SearchIcon, HistoryIcon, ListIcon, TextSizeIcon,
-  TableIcon, ImageIcon, LanguagesIcon, ShareIcon
+  TableIcon, ImageIcon, LanguagesIcon, ShareIcon,
+  BookmarkIcon, BookmarkCheckIcon, BookIcon
 } from './icons'
 
 export const ArticleMenu = ({
   close, onTocSelected, onLanguageSelected,
   onQuickFactsSelected, onGallerySelected,
-  onShareArticleUrl,
+  onShareArticleUrl, onSaveToggle,
   hasLanguages, hasInfobox, hasGallery,
-  isShareEnabled
+  isShareEnabled, isSaveEnabled, isSaved
 }) => {
   const containerRef = useRef()
   const listRef = useRef()
@@ -49,6 +50,16 @@ export const ArticleMenu = ({
     showTextSize()
   }
 
+  const onSaveSelected = () => {
+    onSaveToggle()
+    close()
+  }
+
+  const onSavedListSelected = () => {
+    close()
+    goto.saved()
+  }
+
   const onPreviousSelected = () => {
     const { lang, title } = articleHistory.prev()
     goto.article(lang, title, true)
@@ -72,6 +83,18 @@ export const ArticleMenu = ({
       description: articleHistory.hasPrev() ? articleHistory.getPrev().title : null,
       action: onPreviousSelected,
       enabled: articleHistory.hasPrev()
+    },
+    {
+      title: i18n(isSaved ? 'menu-unsave' : 'menu-save'),
+      icon: isSaved ? BookmarkCheckIcon : BookmarkIcon,
+      action: onSaveSelected,
+      enabled: isSaveEnabled
+    },
+    {
+      title: i18n('menu-saved-articles'),
+      icon: BookIcon,
+      action: onSavedListSelected,
+      enabled: isSaveEnabled
     },
     {
       title: i18n('article-action-sections'),

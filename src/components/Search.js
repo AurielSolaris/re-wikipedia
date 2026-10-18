@@ -1,14 +1,14 @@
 import { h } from 'preact'
 import { useRef, useEffect } from 'preact/hooks'
 import { ListView } from './ListView'
-import { OfflinePanel } from './OfflinePanel'
+import { OfflinePanel, SAVED_ARTICLES_KEY } from './OfflinePanel'
 import { Consent } from './Consent'
 import { SearchLoading } from './SearchLoading'
 import { UnofficialNotice } from './UnofficialNotice'
 import {
   useNavigation, useSearch, useI18n, useSoftkey,
   useOnlineStatus, useTracking, usePopup, useHistoryState,
-  useConfirmDialog
+  useConfirmDialog, useSavedArticleList
 } from 'hooks'
 import {
   articleHistory, goto, getAppLanguage,
@@ -35,8 +35,13 @@ export const Search = () => {
     }
   })
 
+  const savedList = useSavedArticleList()
+  const savedCount = savedList ? savedList.length : 0
+
   const onKeyCenter = () => {
-    if (allowUsage()) {
+    if (getCurrent().key === SAVED_ARTICLES_KEY) {
+      goto.saved()
+    } else if (allowUsage()) {
       const { index, key } = getCurrent()
       if (index) {
         goto.article(lang, key)
@@ -120,15 +125,15 @@ export const Search = () => {
   useSoftkey('Search', {
     right: allowUsage() ? i18n('softkey-settings') : '',
     onKeyRight: allowUsage() ? onKeyRight : null,
-    center: current.type === 'DIV' ? i18n('centerkey-select') : '',
+    center: current.type === 'DIV' ? i18n(current.key === SAVED_ARTICLES_KEY ? 'softkey-open' : 'centerkey-select') : '',
     onKeyCenter,
     left: allowUsage() ? i18n('softkey-tips') : '',
     onKeyLeft: allowUsage() ? onKeyLeft : null,
     onKeyBackspace: !(inputText && current.type === 'INPUT') && onKeyBackSpace,
     onKeyEndCall: onKeyEndCall,
-    onKeyArrowDown: !loading && searchResults && onKeyArrowDown,
-    onKeyArrowUp: !loading && searchResults && onKeyArrowUp
-  }, [current.type, inputText, isOnline, searchResults, loading])
+    onKeyArrowDown: !loading && (searchResults || !isOnline) && onKeyArrowDown,
+    onKeyArrowUp: !loading && (searchResults || !isOnline) && onKeyArrowUp
+  }, [current.type, current.key, inputText, isOnline, searchResults, loading])
 
   useTracking('Search', lang)
 
@@ -155,7 +160,7 @@ export const Search = () => {
       { showSearchBar && <input ref={inputRef} type='text' placeholder={i18n('search-placeholder')} value={inputText} onInput={onInput} data-selectable maxlength='255' /> }
       { showResultsList && <ListView header={i18n('header-search')} items={searchResults} containerRef={listRef} empty={i18n('no-result-found')} /> }
       { showLoading && <SearchLoading /> }
-      { showOfflinePanel && <OfflinePanel /> }
+      { showOfflinePanel && <OfflinePanel savedCount={savedCount} /> }
     </div>
   )
 }

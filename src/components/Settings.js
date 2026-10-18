@@ -9,7 +9,7 @@ import { PrivacyTerms } from './PrivacyTerms'
 import { Feedback } from './Feedback'
 import {
   LanguagesIcon, TouchIcon, FeedbackIcon, InfoIcon, AppIcon, PrivacyIcon,
-  SunIcon, MoonIcon, SunMoonIcon
+  SunIcon, MoonIcon, SunMoonIcon, BookmarkIcon
 } from './icons'
 import { goto, openExternal, nextTheme, getTheme, getTouchSupport } from 'utils'
 
@@ -82,6 +82,7 @@ export const Settings = () => {
   const themeIcon = theme === 'dark' ? MoonIcon : theme === 'light' ? SunIcon : SunMoonIcon
 
   const items = [
+    { title: i18n('settings-saved'), icon: BookmarkIcon, path: '/saved' },
     { title: i18n('settings-language'), icon: LanguagesIcon, path: '/language' },
     { title: i18n('settings-theme'), description: i18n(`theme-${theme}`), icon: themeIcon, action: onThemeToggle },
     { title: i18n('settings-touch-support'), icon: TouchIcon, switch: touchSupport, action: onTouchSupportToggle },

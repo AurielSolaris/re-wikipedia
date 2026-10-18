@@ -15,6 +15,8 @@ const settings = () => route('/settings')
 
 const tips = () => route('/tips')
 
+const saved = () => route('/saved')
+
 const termsOfUse = () => {
   const lang = getAppLanguage()
   openExternal(`https://foundation.m.wikimedia.org/wiki/Terms_of_Use/${lang}`)
@@ -26,4 +28,4 @@ const privacyPolicy = () => {
 
 const back = () => window.history.back()
 
-export const goto = { article, search, termsOfUse, privacyPolicy, back, settings, tips }
+export const goto = { article, search, termsOfUse, privacyPolicy, back, settings, tips, saved }

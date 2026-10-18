@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import fs from 'node:fs'
+import crypto from 'node:crypto'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import preact from '@preact/preset-vite'
@@ -19,15 +20,52 @@ const copyStatic = () => ({
   closeBundle () {
     fs.cpSync(path.resolve(__dirname, 'images'), path.resolve(__dirname, 'dist/images'), { recursive: true })
     fs.copyFileSync(resolvedManifestFile, path.resolve(__dirname, 'dist/manifest.webapp'))
-    // Crawler / SEO files served from the deployment root.
-    for (const file of ['robots.txt', 'sitemap.xml']) {
+    // Crawler / SEO files and the web app manifest, served from the
+    // deployment root.
+    for (const file of ['robots.txt', 'sitemap.xml', 'manifest.webmanifest']) {
       const src = path.resolve(__dirname, file)
       if (fs.existsSync(src)) {
         fs.copyFileSync(src, path.resolve(__dirname, 'dist', file))
       }
     }
+    writeServiceWorker()
   }
 })
+
+const listFiles = dir => fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+  const full = path.join(dir, entry.name)
+  return entry.isDirectory() ? listFiles(full) : [full]
+})
+
+// Writes dist/sw.js from pwa/sw.js with the app shell to precache: index.html,
+// the web app manifest, the modern chunks and images/. The legacy (Firefox 37 /
+// KaiOS) chunks are left out, since browsers that run service workers never
+// load them.
+const SHELL_FILES = ['index.html', 'manifest.webmanifest']
+
+const writeServiceWorker = () => {
+  const dist = path.resolve(__dirname, 'dist')
+  const files = listFiles(dist)
+    .map(file => path.relative(dist, file).split(path.sep).join('/'))
+    .filter(file => SHELL_FILES.includes(file) || /^(assets|images)\//.test(file))
+    .filter(file => !/-legacy[-.]/.test(file) && !file.endsWith('.map'))
+    .sort()
+
+  const hash = crypto.createHash('sha1')
+  for (const file of files) {
+    hash.update(file)
+    if (file === 'index.html') {
+      hash.update(fs.readFileSync(path.join(dist, file)))
+    }
+  }
+  const version = hash.digest('hex').slice(0, 12)
+
+  const template = fs.readFileSync(path.resolve(__dirname, 'pwa/sw.js'), 'utf8')
+  const sw = template
+    .replace("'__VERSION__'", JSON.stringify(version))
+    .replace('= __PRECACHE__', '= ' + JSON.stringify(['./'].concat(files), null, 2))
+  fs.writeFileSync(path.join(dist, 'sw.js'), sw)
+}
 
 export default defineConfig({
   // KaiOS packages load from a relative origin (`app://...`), while the web

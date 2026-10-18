@@ -119,5 +119,18 @@
     "settings-theme": "Theme",
     "theme-auto": "System",
     "theme-light": "Light",
-    "theme-dark": "Dark"
+    "theme-dark": "Dark",
+    "article-action-save": "Save",
+    "article-action-saved": "Saved",
+    "header-saved": "Saved articles",
+    "saved-empty": "No saved articles yet. Open an article and choose Save to read it without internet.",
+    "saved-remove-title": "Remove saved article?",
+    "saved-remove-message": "\"$1\" will no longer be available offline.",
+    "softkey-remove": "Remove",
+    "softkey-open": "Open",
+    "settings-saved": "Saved articles",
+    "menu-save": "Save for offline",
+    "menu-unsave": "Remove from saved",
+    "menu-saved-articles": "Saved articles",
+    "offline-saved-articles": "$1 saved {{PLURAL:$1|article|articles}}"
 }

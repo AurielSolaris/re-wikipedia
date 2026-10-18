@@ -1,0 +1,20 @@
+{
+  "name": "Wikipedia (unofficial, lightweight web reader)",
+  "short_name": "Wikipedia",
+  "description": "An unofficial, lightweight Wikipedia reader. Save articles to read them without internet.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "categories": ["books", "education", "reference"],
+  "icons": [
+    { "src": "images/56px.png", "sizes": "56x56", "type": "image/png" },
+    { "src": "images/112px.png", "sizes": "112x112", "type": "image/png" },
+    { "src": "images/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "images/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "images/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
