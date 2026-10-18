@@ -17,18 +17,18 @@ so the numbers reflect hand-written source only.
 
 | Area                        | Language | Files | Code lines |
 | --------------------------- | -------- | ----- | ---------- |
-| `src/components`            | JS       | 39    | 2046       |
-| `src/hooks`                 | JS       | 21    | 839        |
-| `src/utils`                 | JS       | 27    | 677        |
-| `src/api`                   | JS       | 10    | 328        |
+| `src/components`            | JS       | 40    | 2147       |
+| `src/hooks`                 | JS       | 22    | 898        |
+| `src/utils`                 | JS       | 28    | 760        |
+| `src/api`                   | JS       | 10    | 357        |
 | `src/reducers`              | JS       | 2     | 62         |
 | `src/contexts`              | JS       | 6     | 15         |
 | `src/index.js` (entry)      | JS       | 1     | 21         |
-| **Remaining (JS)**          |          | 106   | 3988       |
-| **Converted (`src/res`)**   | ReScript | 1     | 6          |
-| **Total `src`**             |          | 107   | 3994       |
+| **Remaining (JS)**          |          | 109   | 4260       |
+| **Converted (`src/res`)**   | ReScript | 2     | 14         |
+| **Total `src`**             |          | 111   | 4274       |
 
-Progress: ~0.2% converted (6 / 3994 code lines).
+Progress: ~0.3% converted (14 / 4274 code lines).
 
 ## Largest files still to convert
 
@@ -51,3 +51,6 @@ Progress: ~0.2% converted (6 / 3994 code lines).
 - `src/res/Hello.res` (+ generated `Hello.res.mjs`) — first ReScript component,
   mounted into the Preact tree through `src/components/ReactIsland.js`
   (React `createRoot` island), hosted by `src/components/AboutApp.js`.
+- `src/res/Loading.res` — the loading indicator (moon/earth/galaxy + message),
+  re-implemented in ReScript + React and wrapped by `src/components/Loading.js`
+  through the same island bridge.
