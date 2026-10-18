@@ -17,34 +17,34 @@ so the numbers reflect hand-written source only.
 
 | Area                        | Language | Files | Code lines |
 | --------------------------- | -------- | ----- | ---------- |
-| `src/components`            | JS       | 40    | 2147       |
-| `src/hooks`                 | JS       | 22    | 898        |
-| `src/utils`                 | JS       | 28    | 760        |
-| `src/api`                   | JS       | 10    | 357        |
+| `src/components`            | JS       | 40    | 2279       |
+| `src/hooks`                 | JS       | 23    | 925        |
+| `src/utils`                 | JS       | 30    | 894        |
+| `src/api`                   | JS       | 10    | 386        |
 | `src/reducers`              | JS       | 2     | 62         |
 | `src/contexts`              | JS       | 6     | 15         |
-| `src/index.js` (entry)      | JS       | 1     | 21         |
-| **Remaining (JS)**          |          | 109   | 4260       |
-| **Converted (`src/res`)**   | ReScript | 2     | 14         |
-| **Total `src`**             |          | 111   | 4274       |
+| `src/index.js` (entry)      | JS       | 1     | 23         |
+| **Remaining (JS)**          |          | 112   | 4584       |
+| **Converted (`src/res`)**   | ReScript | 5     | 122        |
+| **Total `src`**             |          | 117   | 4706       |
 
-Progress: ~0.3% converted (14 / 4274 code lines).
+Progress: ~2.6% converted (122 / 4706 code lines).
 
 ## Largest files still to convert
 
 | Code lines | File                                        |
 | ---------- | ------------------------------------------- |
 | 257        | `components/Article.js`                     |
+| 214        | `hooks/useArticleLinksNavigation.js`        |
 | 199        | `utils/consent.js`                          |
-| 190        | `hooks/useArticleLinksNavigation.js`        |
+| 185        | `components/icons.js`                       |
+| 172        | `api/getArticle.js`                         |
 | 154        | `components/Search.js`                      |
 | 135        | `components/Feedback.js`                    |
-| 126        | `components/Tips.js`                        |
+| 127        | `components/Tips.js`                        |
 | 125        | `components/Gallery.js`                     |
 | 121        | `utils/languages.js`                        |
-| 115        | `api/getArticle.js`                         |
-| 99         | `components/ArticleMenu.js`                 |
-| 98         | `hooks/useTracking.js`                      |
+| 115        | `hooks/useNavigation.js`                    |
 
 ## Done so far
 
@@ -54,3 +54,10 @@ Progress: ~0.3% converted (14 / 4274 code lines).
 - `src/res/Loading.res` — the loading indicator (moon/earth/galaxy + message),
   re-implemented in ReScript + React and wrapped by `src/components/Loading.js`
   through the same island bridge.
+- `src/res/ThumbSize.res` — standard Wikimedia thumbnail widths and the rounding
+  used for every image URL (`src/utils/fixImgSrc.js` re-exports it).
+- `src/res/Preference.res` — generic observable preference store (cache,
+  allow-list validation, persistence, notification) used by
+  `src/utils/preference.js`, `utils/theme.js` and `utils/touchSupport.js`.
+- `src/res/GridNav.res` — pure grid navigation maths (column count, step, wrap)
+  used by `src/hooks/useNavigation.js` for the desktop card grid.

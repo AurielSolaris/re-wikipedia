@@ -67,6 +67,13 @@ rescript.json
   ReScript 12 config: sources in src/res, esmodule + in-source output with a
   .res.mjs suffix, JSX v4, depends on @rescript/react.
 
+src/res/*.res (compiled *.res.mjs are generated, never edited)
+  Hello.res       First ReScript component (About Wikipedia).
+  Loading.res     Loading indicator as ReScript + React (ReactIsland bridge).
+  ThumbSize.res   Standard Wikimedia thumbnail widths + rounding (fixImgSrc).
+  Preference.res  Observable preference store (theme, touch/click).
+  GridNav.res     Desktop card-grid navigation maths (useNavigation).
+
 vercel.json
   Web deployment: bun install/build, output dist, VITE_BASE=/ and
   DISABLE_REQUEST_HEADER=1, security + asset cache headers, and an SPA rewrite
@@ -121,8 +128,9 @@ scripts/stats.sh / stats_header.sh / stats_line.sh
 src/index.js  (entry point)
   Reads device language (utils/languages), initializes Banana i18n with the app
   language, loads all i18n messages + consent messages, computes text direction,
-  and renders <App i18n={banana} dir={dir}> into .root. Connects: utils,
-  components/App, style/style.less.
+  and renders <App i18n={banana} dir={dir}> into .root. Also initialises the
+  theme and touch/click preferences before first paint (initTheme,
+  initTouchSupport). Connects: utils, components/App, style/style.scss.
 
 ------------------------------------------------------------------------------
  src/reducers/  - softkey state machine
@@ -174,7 +182,16 @@ usePopup.js
 useNavigation.js
   Keyboard navigation over [data-selectable] elements (up/down or left/right).
   Tracks the selected element via nav-selected/nav-index attributes, scrolls it
-  into view, and wires arrow keys through useSoftkey.
+  into view, and wires arrow keys through useSoftkey. The 'grid' axis follows
+  the desktop card grid: up/down move a whole row, left/right a single card
+  (column count + wrap maths live in src/res/GridNav.res).
+
+useTheme.js
+  Subscribes to the theme preference ['auto' | 'light' | 'dark'] and returns
+  [theme, resolvedTheme, setTheme]. Every consumer re-renders on change.
+
+useTouchSupport.js
+  Subscribes to the touch/click preference and returns [enabled, setEnabled].
 
 useRange.js
   Small bounded counter hook [value, prev, next, set] used by Gallery,
@@ -354,6 +371,15 @@ normalizeTitle.js     underscores -> spaces.
 fixImgSrc.js          fixImgSrc normalises protocol-relative / extension image
                       paths; thumbUrl snapToThumbStep builds a thumbnail URL at
                       a standard Wikimedia size (THUMB_STEPS).
+preference.js       Platform side of the ReScript preference store: wraps
+                    localStorage with an in-memory fallback and exports
+                    createPreference({key, defaultValue, values, parse,
+                    serialize}). Used by theme.js and touchSupport.js.
+theme.js            Theme preference store + painting: syncs html[data-theme],
+                    color-scheme and meta[theme-color]; get/set/subscribe/init
+                    and nextTheme for the Settings toggle.
+touchSupport.js     Touch/click preference store + html[data-touch] attribute,
+                    auto-detected from pointer capabilities on first run.
 viewport.js           { width, height } of window.
 
 userCountry.js     Stores/reads the GeoIP country in localStorage
@@ -479,33 +505,25 @@ index.js
   LESS.
 
 ===============================================================================
- style/  - LESS STYLES
+ style/  - SCSS STYLES
 ===============================================================================
-  style.less is the single entry (imported by src/index.js). It imports:
+  style.scss is the single entry (imported by src/index.js). It imports:
+    tokens first (light/dark palettes + scales)
     global:    variables, layout, mixin, input, fontsizes
     components: confirmdialog, links, listview, loading, popup, radiolistview,
                 softkey
     views:     aboutapp, aboutwikipedia, article, articlelanguage, consent,
-                error, feedback, footer, gallery, language, menu, offline,
-                offlinepanel, onboarding, preview, privacyterms, quickfacts,
-                reference, search, settings, table, textsize, tips, toc
-  Each LESS file styles the component/view of the same name. variables.less and
-  mixin.less provide tokens (.clampMixin) and fontsizes.less drives the
-  font-size-N body classes set by App/TextSize.
-
-===============================================================================
- cypress/  - END-TO-END TESTS
-===============================================================================
-  integration/*.js   Specs: article-view, onboarding, references-popup, search,
-                     settings, special-cases, tips.
-  page-objects/*.js  Page-object helpers matching views (article-page,
-                     search-page, settings-page, onboarding-page, tips-page,
-                     popup-page, language-settings-page, quick-facts-page,
-                     article-menu-page, about-app-page, about-wikipedia-page).
-  fixtures/*.json    Mock API responses (cat/catt/cattle/helena search).
-  support/commands.js Custom Cypress commands; support/index.js global setup.
-  plugins/index.js    Cypress plugin config.
-  Configured by cypress.json; run via `npm test` / `npm run cypress:open`.
+                error, feedback, footer, gallery, language, menu, notice,
+                offline, offlinepanel, onboarding, preview, privacyterms,
+                quickfacts, reference, search, settings, table, textsize, tips,
+                toc
+    responsive last (large-screen overrides)
+  Each SCSS file styles the component/view of the same name. tokens.scss holds
+  the GitHub Primer design tokens (--w-*), variables.scss/mixin.scss provide
+  layout variables and .clampMixin, fontsizes.scss drives the font-size-N body
+  classes set by App/TextSize. responsive.scss upgrades >= 600 / 900 / 1920px
+  viewports only (KaiOS base untouched) and from 900px turns the list screens
+  into the multi-column card grid that useNavigation's 'grid' axis follows.
 
 ===============================================================================
  KEY CONNECTION CHAINS (quick reference)
@@ -522,6 +540,6 @@ index.js
   Navigation:     goto.js -> preact-router route() -> Routes.js -> view.
   Analytics:      useTracking / useArticlePreviewTracking / consent ->
                   utils/sendEvent|sendLegacyEvent|sendErrorLog -> sendBeacon.
-  Build:          webpack DefinePlugin globals -> utils/{featureFlags,appVersion,
+  Build:          Vite `define` globals -> utils/{featureFlags,appVersion,
                   gitHash,mode}; scripts/manifest.js -> manifest.webapp.
 ===============================================================================
