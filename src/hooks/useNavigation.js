@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'preact/hooks'
 import { useSoftkey } from 'hooks'
 import { useTouchSupport } from './useTouchSupport'
+import { columns as gridColumns, step as gridStep, wrap as gridWrap } from '../res/GridNav.res.mjs'
 
+// `axis` is 'x' for horizontal lists ('y' for vertical ones). It may also be
+// 'grid', for the desktop card grid (responsive.scss), where a press moves by a
+// whole row and the left/right arrows walk the columns. The maths live in
+// ReScript (src/res/GridNav.res).
 export const useNavigation = (origin, containerRef, listRef, axis, elementsSelector = '[data-selectable]') => {
   const [current, setCurrent] = useState({ type: null, index: 0, key: null })
   const [touchSupport] = useTouchSupport()
@@ -17,21 +22,32 @@ export const useNavigation = (origin, containerRef, listRef, axis, elementsSelec
 
   const setNavigation = index => selectElement(getAllElements()[index] || document.body)
 
-  const navigatePrevious = () => {
-    const allElements = getAllElements()
-    const currentIndex = getTheIndexOfTheSelectedElement()
-
-    const setIndex = (currentIndex === 0) ? allElements.length - 1 : currentIndex - 1
-    return selectElement(allElements[setIndex] || allElements[0], setIndex)
+  // On a card grid the browser reports one token per rendered column; on a
+  // single-column list (KaiOS, or before the desktop breakpoint) it reports
+  // "none" and this is 1.
+  const getColumnCount = () => {
+    const node = listRef.current || containerRef.current
+    if (!node || typeof window === 'undefined' || !window.getComputedStyle) {
+      return 1
+    }
+    return gridColumns(window.getComputedStyle(node).gridTemplateColumns)
   }
 
-  const navigateNext = () => {
+  const navigateByDelta = delta => {
     const allElements = getAllElements()
-    const currentIndex = getTheIndexOfTheSelectedElement()
-
-    const setIndex = (currentIndex + 1 > allElements.length - 1) ? 0 : currentIndex + 1
-    return selectElement(allElements[setIndex] || allElements[0], setIndex)
+    if (!allElements.length) {
+      return null
+    }
+    const index = gridWrap({
+      index: getTheIndexOfTheSelectedElement(),
+      delta,
+      length: allElements.length
+    })
+    return selectElement(allElements[index] || allElements[0], index)
   }
+
+  const navigatePrevious = () => navigateByDelta(-gridStep({ axis, columns: getColumnCount() }))
+  const navigateNext = () => navigateByDelta(gridStep({ axis, columns: getColumnCount() }))
 
   const selectElement = (selectElement, setIndex = 0) => {
     if (selectElement) {
@@ -65,10 +81,17 @@ export const useNavigation = (origin, containerRef, listRef, axis, elementsSelec
 
   const previousKey = axis === 'x' ? 'onKeyArrowLeft' : 'onKeyArrowUp'
   const nextKey = axis === 'x' ? 'onKeyArrowRight' : 'onKeyArrowDown'
-  useSoftkey(origin, {
-    [previousKey]: navigatePrevious,
-    [nextKey]: navigateNext
-  })
+  useSoftkey(origin, axis === 'grid'
+    ? {
+        onKeyArrowUp: navigatePrevious,
+        onKeyArrowDown: navigateNext,
+        onKeyArrowLeft: () => navigateByDelta(-1),
+        onKeyArrowRight: () => navigateByDelta(1)
+      }
+    : {
+        [previousKey]: navigatePrevious,
+        [nextKey]: navigateNext
+      })
 
   useEffect(() => {
     if (!listRef.current) return

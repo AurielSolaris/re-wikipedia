@@ -16,7 +16,7 @@ export const ArticleLanguage = ({ lang, title, close, closeAll }) => {
     return <Loading message={i18n('article-language-loading-message')} onClose={close} />
   }
 
-  const [, setNavigation, getCurrent] = useNavigation('ArticleLanguage', containerRef, listRef, 'y')
+  const [, setNavigation, getCurrent] = useNavigation('ArticleLanguage', containerRef, listRef, 'grid')
   const onKeyCenter = () => {
     const { index } = getCurrent()
     if (index > 0) {

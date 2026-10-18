@@ -13,7 +13,7 @@ export const Feedback = ({ close }) => {
   const i18n = useI18n()
   const [message, setMessage] = useState()
   const [showSuccessConfirmation] = usePopup(SuccessConfirmationPopup, { stack: true })
-  const [current, setNavigation, getCurrent] = useNavigation('Feedback', containerRef, containerRef, 'y')
+  const [current, setNavigation, getCurrent] = useNavigation('Feedback', containerRef, containerRef, 'grid')
   const isOnline = useOnlineStatus()
   const showConfirmDialog = useConfirmDialog()
 

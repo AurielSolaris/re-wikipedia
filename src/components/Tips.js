@@ -11,7 +11,7 @@ export const Tips = () => {
   const containerRef = useRef()
   const listRef = useRef()
   const i18n = useI18n()
-  const [, setNavigation, getCurrent] = useNavigation('Tips', containerRef, listRef, 'y')
+  const [, setNavigation, getCurrent] = useNavigation('Tips', containerRef, listRef, 'grid')
 
   const [showReadPopup] = usePopup(ReadPopup, { mode: 'fullscreen' })
   const [showSearchPopup] = usePopup(SearchPopup, { mode: 'fullscreen' })

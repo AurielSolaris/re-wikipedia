@@ -22,7 +22,7 @@ export const Search = () => {
   const inputRef = useRef()
   const listRef = useRef()
   const i18n = useI18n()
-  const [current, setNavigation, getCurrent,, navigateNext, navigatePrevious] = useNavigation('Search', containerRef, listRef, 'y')
+  const [current, setNavigation, getCurrent,, navigateNext, navigatePrevious] = useNavigation('Search', containerRef, listRef, 'grid')
   const lang = getAppLanguage()
   const [inputText, setInputText] = useHistoryState('search-input-text')
   const [setQuery, searchResults, loading] = useSearch(lang, inputText)

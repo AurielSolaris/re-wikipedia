@@ -27,7 +27,7 @@ export const PrivacyTerms = ({ close }) => {
     onKeyBackspace: close
   })
 
-  const [, setNavigation, getCurrent] = useNavigation('PrivacyTerms', containerRef, listRef, 'y')
+  const [, setNavigation, getCurrent] = useNavigation('PrivacyTerms', containerRef, listRef, 'grid')
 
   useEffect(() => {
     setNavigation(0)

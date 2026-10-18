@@ -14,7 +14,7 @@ export const Language = () => {
   const [lang, setLang] = useState(getAppLanguage())
   const [items, query, setQuery] = useSearchLanguage(lang)
   const [showLanguagePopup] = usePopup(LanguagePopup)
-  const [current, setNavigation, getCurrent] = useNavigation('Language', containerRef, listRef, 'y')
+  const [current, setNavigation, getCurrent] = useNavigation('Language', containerRef, listRef, 'grid')
 
   const onKeyCenter = () => {
     const { index } = getCurrent()

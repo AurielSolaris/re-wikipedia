@@ -19,7 +19,7 @@ export const ArticleMenu = ({
   const containerRef = useRef()
   const listRef = useRef()
   const i18n = useI18n()
-  const [, setNavigation, getCurrent] = useNavigation('Menu', containerRef, listRef, 'y')
+  const [, setNavigation, getCurrent] = useNavigation('Menu', containerRef, listRef, 'grid')
   const [showTextSize] = usePopup(TextSize, { stack: true, hideOthers: true })
 
   const onKeyCenter = () => {
