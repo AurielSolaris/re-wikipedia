@@ -274,8 +274,10 @@ getArticle.js
   Fetches the mobile-html article, parses sections, table of contents,
   infobox, and references, and rewrites image URLs to sized, lazy-loaded
   thumbnails. Reuses the API's own `data-src`/`srcset` renditions and otherwise
-  builds one with utils/thumbUrl (standard sizes only). Uses utils/cachedFetch,
-  buildPcsUrl, canonicalizeTitle. Used by useArticle.
+  builds one with utils/thumbUrl (standard sizes only). leadImageWidth() picks
+  the hero width (1280 / 960 / 500 by viewport) so the lead image is never
+  upscaled. Uses utils/cachedFetch, buildPcsUrl, canonicalizeTitle. Used by
+  useArticle.
 
 getArticleSummary.js
   REST summary endpoint: title, thumbnail, extract. Used by useArticle and
@@ -428,8 +430,12 @@ Search.js          Home/search view: input + results list, offline panel, consen
 Article.js         Article reader: fetches article, renders one section at a
                    time with pagination, link navigation, actions (TOC, gallery,
                    languages, share), popups (TOC, language, menu, quickfacts,
-                   gallery, reference, table), history + tracking. Uses many
-                   components/hooks/utils. The hub for sub-components below.
+                   gallery, reference, table), history + tracking. Also renders
+                   the lead image as <img class='article-hero'> (hidden on
+                   KaiOS, where the section itself is the cover-background hero;
+                   the leftover offset for that layout is applied only below
+                   900px). Uses many components/hooks/utils. The hub for
+                   sub-components below.
 Settings.js        Settings list -> Language route, Feedback, AboutWikipedia,
                    AboutApp, PrivacyTerms popups. Uses ListView + usePopup.
 Tips.js            Tips list + Read/Search/Switch/About tip popups; "try"
@@ -520,10 +526,14 @@ index.js
     responsive last (large-screen overrides)
   Each SCSS file styles the component/view of the same name. tokens.scss holds
   the GitHub Primer design tokens (--w-*), variables.scss/mixin.scss provide
-  layout variables and .clampMixin, fontsizes.scss drives the font-size-N body
-  classes set by App/TextSize. responsive.scss upgrades >= 600 / 900 / 1920px
-  viewports only (KaiOS base untouched) and from 900px turns the list screens
-  into the multi-column card grid that useNavigation's 'grid' axis follows.
+  layout variables, .clampMixin and the `glass`/`glass-blur` frosted-surface
+  mixins, fontsizes.scss drives the font-size-N body classes set by
+  App/TextSize. responsive.scss upgrades >= 600 / 900 / 1920px viewports only
+  (KaiOS base untouched): it adds the tinted body::before backdrop the glass
+  blurs, from 900px turns the list screens into the multi-column card grid that
+  useNavigation's 'grid' axis follows, swaps the article hero background for a
+  real bounded <img> band, pins the softkey bar with position: fixed, and lets
+  in-content figures grow past their 135px KaiOS size.
 
 ===============================================================================
  KEY CONNECTION CHAINS (quick reference)

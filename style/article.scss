@@ -25,6 +25,14 @@
 		background-position: center;
 		background-repeat: no-repeat;
 
+		// On KaiOS this section *is* the hero: the lead image is the cover
+		// background above and the card is pushed to the bottom of it. From
+		// 900px style/responsive.scss turns this into a bounded image band above
+		// the card instead, so the <img> exists but stays hidden here.
+		.article-hero {
+			display: none;
+		}
+
 		.card {
 			padding: 10px;
 			border-radius: 5px;

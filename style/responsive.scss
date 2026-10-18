@@ -1,13 +1,18 @@
 // Responsive / large-screen layer.
 //
-// The KaiOS experience (small, keypad-driven, full-bleed) is the base. These
-// min-width queries only *upgrade* larger viewports (tablet, desktop, WUXGA),
-// so small devices and the legacy build are untouched.
+// The KaiOS experience (small, keypad-driven, full-bleed, flat) is the base.
+// These min-width queries only *upgrade* larger viewports (tablet, desktop,
+// WUXGA), so small devices and the legacy build are untouched.
 //
-// From 900px the list screens stop being a narrow centred strip: their rows tile
-// into a card grid that fills the viewport (~2 cards on a laptop, 3-4 on a WUXGA
-// monitor). useNavigation's 'grid' axis follows the same layout, so the arrow
-// keys keep working.
+// Two things happen here:
+//   1. The list screens stop being a narrow centred strip and tile into a card
+//      grid that fills the viewport (~2 cards on a laptop, 3-4 on a WUXGA
+//      monitor). useNavigation's 'grid' axis follows the same layout, so the
+//      arrow keys keep working.
+//   2. The chrome becomes frosted glass over a soft tinted backdrop. Motion is
+//      deliberately limited to 120-200ms transitions on hover/selection; there
+//      are no keyframe animations, and prefers-reduced-motion clamps even those
+//      (style/layout.scss).
 
 html {
 	-webkit-text-size-adjust: 100%;
@@ -25,13 +30,24 @@ html {
 	}
 }
 
-// Tablet and up: calmer, slightly larger type.
+// Tablet and up: calmer, slightly larger type, and a static wash of colour
+// behind everything so the glass panels have something to refract. It is purely
+// decorative (pointer-events: none) and never animates.
 @media ( min-width: 600px ) {
 	:root {
 		--w-fs-body: 15px;
 		--w-fs-title: 16px;
 		--w-fs-small: 13px;
 		--w-fs-h2: 19px;
+	}
+
+	body:before {
+		content: '';
+		position: fixed;
+		z-index: -1;
+		inset: -10%;
+		pointer-events: none;
+		background-image: radial-gradient( 55% 45% at 8% -5%, var( --w-backdrop-1 ), transparent 70% ), radial-gradient( 45% 40% at 92% 4%, var( --w-backdrop-2 ), transparent 72% ), radial-gradient( 50% 45% at 50% 106%, var( --w-backdrop-1 ), transparent 74% );
 	}
 
 	.listview .list,
@@ -56,17 +72,17 @@ html {
 		--w-fs-h1: 26px;
 	}
 
-	.search {
-		.double-u {
-			width: 76px;
-			padding-top: 88px;
-		}
-
-		input {
-			height: 44px;
-		}
+	// The backdrop is what the glass blurs, so the full-bleed view backgrounds
+	// step out of the way and only the surfaces stay opaque.
+	.search,
+	.article,
+	.listview .list,
+	.radiolistview .list {
+		background-color: transparent;
 	}
 
+	// One shell width for the list screens and the article footer so headers,
+	// cards and grid columns line up on every screen.
 	.listview .list,
 	.radiolistview .list,
 	.listview .header,
@@ -78,6 +94,51 @@ html {
 		margin: 0 auto;
 	}
 
+	// The softkey bar no longer scrolls away or lands in the middle of a long
+	// article: it is pinned to the viewport, so the document needs the same
+	// amount of breathing room at its end.
+	body {
+		padding-bottom: calc( #{$softkeysHeight} + env( safe-area-inset-bottom ) );
+	}
+
+	.softkey {
+		position: fixed;
+		z-index: 10;
+		@include glass;
+
+		border-width: 1px 0 0;
+		border-radius: 0;
+	}
+
+	.search {
+		.double-u {
+			width: 76px;
+			padding-top: 88px;
+		}
+
+		input {
+			height: 44px;
+			background-color: var( --w-glass-bg );
+			@include glass-blur;
+		}
+	}
+
+	// Headers and popups are the same material as the cards.
+	.listview .header,
+	.radiolistview .header {
+		@include glass;
+
+		border-width: 0 0 1px;
+	}
+
+	.popup .popup-content {
+		@include glass;
+
+		border-width: 1px 0 0;
+		background-color: var( --w-glass-bg );
+	}
+
+	// ---- article ------------------------------------------------------------
 	.article {
 		overflow: visible;
 
@@ -90,9 +151,59 @@ html {
 			min-height: auto;
 			margin: 0 auto;
 			padding: var( --w-sp-5 ) var( --w-sp-4 );
+			// The lead image is a real, bounded <img> band on desktop; the
+			// KaiOS cover-background hero is switched off (and with it the
+			// "image behind the text" trap).
+			background-image: none !important;
+		}
+
+		.article-section .article-hero {
+			display: block;
+			width: 100%;
+			max-height: min( 44vh, 420px );
+			object-fit: cover;
+			object-position: center top;
+			margin: 0 0 var( --w-sp-4 );
+			border: 1px solid var( --w-glass-border );
+			border-radius: var( --w-r-lg );
+			box-shadow: var( --w-shadow-raised );
+		}
+
+		.article-section .card {
+			// Cancels the inline offset the KaiOS hero layout applies
+			// (components/Article.js only computes it below 900px).
+			margin: 0 !important;
+			@include glass;
+		}
+
+		// Full-size in-content media now that the column is ~1000px wide; the
+		// KaiOS layer keeps its 135px thumbnails.
+		.article-section .card .article-content {
+			figure,
+			figure-inline,
+			.gallerybox {
+				width: auto;
+				max-width: min( 100%, 420px );
+
+				img {
+					max-width: 100%;
+					max-height: none;
+				}
+			}
+
+			.thumb .thumbinner .trow .tsingle {
+				width: auto !important;
+				max-width: min( 100%, 420px );
+			}
+
+			ul.gallery .gallerybox {
+				width: 100%;
+				max-width: none;
+			}
 		}
 	}
 
+	// ---- list screens -------------------------------------------------------
 	.listview .list,
 	.radiolistview .list,
 	.article-footer .content .list,
@@ -112,9 +223,12 @@ html {
 			min-width: 0;
 			margin: 0;
 			padding: var( --w-sp-3 );
-			border: 1px solid var( --w-border );
-			border-radius: var( --w-r-md );
-			background-color: var( --w-canvas );
+			border-radius: var( --w-r-lg );
+			@include glass;
+
+			// Calm, short transitions only: a card lifts 1px, nothing moves
+			// around the page.
+			transition: background-color var( --w-dur-2 ) var( --w-ease-ui ), border-color var( --w-dur-2 ) var( --w-ease-ui ), box-shadow var( --w-dur-2 ) var( --w-ease-ui ), transform var( --w-dur-2 ) var( --w-ease-ui );
 
 			.info {
 				flex: 1 1 auto;
@@ -123,14 +237,16 @@ html {
 
 			@media ( hover: hover ) {
 				&:hover {
-					box-shadow: var( --w-shadow-raised );
+					box-shadow: var( --w-shadow-overlay );
+					transform: translateY( -1px );
 				}
 			}
 
-			// Selection: tint + leading accent bar + raised card (never colour
+			// Selection: tint + leading accent bar + lifted card (never colour
 			// alone, WCAG 1.4.1).
 			&[ nav-selected=true ] {
-				box-shadow: inset 3px 0 0 0 var( --w-accent ), var( --w-shadow-raised );
+				box-shadow: inset 3px 0 0 0 var( --w-accent ), var( --w-shadow-overlay );
+				transform: translateY( -1px );
 			}
 		}
 
@@ -169,6 +285,10 @@ html {
 
 	.article .article-section {
 		max-width: min( 1200px, 74vw );
+	}
+
+	.article .article-section .article-hero {
+		max-height: min( 48vh, 520px );
 	}
 
 	.listview .list,

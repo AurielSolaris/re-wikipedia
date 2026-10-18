@@ -30,9 +30,18 @@ the upstream app. Highlights:
 - **Responsive by design**: works from a 240px KaiOS feature phone up to
   WUXGA (1920×1200) desktops. On laptops and desktops the list screens stop
   being a narrow centred strip and tile into a **multi-column card grid**
-  (~92% of the viewport, 2-3 cards per row and 4 on a wide monitor), with the
-  arrow keys following the grid. Apple devices supported (safe-area insets,
-  `apple-mobile-web-app` meta, home-screen icon).
+  (~92% of the viewport, 3 cards per row at 1440px and 4 on a wide monitor),
+  with the arrow keys following the grid. Apple devices supported (safe-area
+  insets, `apple-mobile-web-app` meta, home-screen icon).
+- **Frosted-glass desktop chrome** over a soft tinted backdrop: headers, list
+  cards, the article card, popups and the pinned softkey bar are translucent
+  panels with a 16px blur (`backdrop-filter`, with an opaque fallback and no
+  effect at all on KaiOS). Motion stays minimal — 120-200ms transitions and a
+  1px card lift, no keyframe animation.
+- **Article hero image**: the lead image is a bounded, `object-fit: cover` band
+  above the reading card on desktop (a full-screen cover background on KaiOS),
+  always requested at a standard Wikimedia thumbnail step (up to 1280px) so it
+  is never upscaled or blurry.
 - **SEO and sharing**: proper meta tags, Open Graph, Twitter card, canonical
   URL, JSON-LD, `robots.txt` and `sitemap.xml`.
 - **Works offline-first where possible**: cached API responses and offline
@@ -125,6 +134,24 @@ table of contents, article menu/footer) render as a card grid: one shell width o
 Navigation follows the grid — up/down move a whole row, left/right a single card
 (`src/res/GridNav.res` + the `'grid'` axis in `useNavigation`). Below that width
 nothing changes, so KaiOS layout and the legacy bundle are untouched.
+
+The same breakpoint switches the article from the KaiOS hero (full-screen cover
+background with the intro card at its bottom, pushed there by
+`components/Article.js`) to normal document flow: a real `<img class='article-hero'>`
+band, then the reading card. The softkey bar becomes `position: fixed` so it
+stays put instead of landing mid-article, and the document gets matching bottom
+padding. In-content figures grow from their 135px KaiOS thumbnails to up to
+420px.
+
+## Glassmorphic chrome
+
+`style/mixin.scss` defines `glass` / `glass-blur`; the tokens live in
+`style/tokens.scss` (`--w-glass-bg`, `--w-glass-border`, `--w-glass-shadow`,
+`--w-glass-blur`, `--w-backdrop-*`). The tinted wash the panels blur is a fixed,
+non-animated `body::before` in `style/responsive.scss`, so it only exists from
+600px up; KaiOS never pays for `backdrop-filter` and the opaque fallback keeps
+text at its WCAG AA contrast. Motion is limited to short transitions on
+hover/selection (and is clamped by `prefers-reduced-motion`).
 
 ## Deploying the web app
 

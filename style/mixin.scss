@@ -1,3 +1,22 @@
+// Frosted-glass surfaces.
+//
+// Used only from the large-screen layer (style/responsive.scss): the KaiOS /
+// Firefox 37 build has no backdrop-filter, so it keeps the flat chrome and the
+// semi-opaque fallback is all it ever sees.
+@mixin glass-blur {
+	@supports ( ( -webkit-backdrop-filter: blur( 1px ) ) or ( backdrop-filter: blur( 1px ) ) ) {
+		-webkit-backdrop-filter: blur( var( --w-glass-blur ) ) saturate( var( --w-glass-saturate ) );
+		backdrop-filter: blur( var( --w-glass-blur ) ) saturate( var( --w-glass-saturate ) );
+	}
+}
+
+@mixin glass {
+	background-color: var( --w-glass-bg );
+	border: 1px solid var( --w-glass-border );
+	box-shadow: var( --w-glass-shadow );
+	@include glass-blur;
+}
+
 @mixin clampMixin($maxHeight) {
 	&.clamp {
 		max-height: $maxHeight;

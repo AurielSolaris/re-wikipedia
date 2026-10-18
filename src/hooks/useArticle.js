@@ -2,9 +2,9 @@ import { useState, useEffect } from 'preact/hooks'
 import { useI18n } from 'hooks'
 import {
   getArticle, getArticleSummary, getArticleMediaList,
-  getSuggestedArticles, getLanglinks
+  getSuggestedArticles, getLanglinks, leadImageWidth
 } from 'api'
-import { canonicalizeTitle } from 'utils'
+import { canonicalizeTitle, thumbUrl } from 'utils'
 
 export const useArticle = (lang, title) => {
   const [article, setArticle] = useState(null)
@@ -32,9 +32,11 @@ export const useArticle = (lang, title) => {
         const footerTitle = contentI18n('toc-footer')
         const anchor = canonicalizeTitle(footerTitle)
 
-        // replace lead image with summary thumbnail
+        // The summary ships the canonical lead image but only as a fixed
+        // ~330px thumbnail, which is far too small to stretch across the hero
+        // band. Re-build it at the lead width (a standard thumbnail step).
         if (summary.imageUrl) {
-          article.sections[0].imageUrl = summary.imageUrl
+          article.sections[0].imageUrl = thumbUrl(summary.imageUrl, leadImageWidth(), lang)
         }
 
         // set language count value

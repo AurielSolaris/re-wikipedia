@@ -2,15 +2,29 @@ import {
   cachedFetch, buildPcsUrl, buildCoreRestUrl, canonicalizeTitle, fixImgSrc, thumbUrl
 } from 'utils'
 
-// Bounded image widths. The lead image is used as a full-bleed card background
-// (and shared with page previews), in-content images render inside a
-// ~240-1920px column. `thumbUrl` rounds these up to a standard Wikimedia
-// thumbnail step, which is required since non-standard widths now 400.
+// Bounded image widths. The lead image is used as the article hero (a full-width
+// band on desktop, a cover background on KaiOS) and is shared with page
+// previews; in-content images render inside the article column. `thumbUrl`
+// rounds these up to a standard Wikimedia thumbnail step, which is required
+// since non-standard widths now 400.
 const CONTENT_IMAGE_WIDTH = 500
 const LEAD_IMAGE_WIDTH = 960
+// The hero band is up to `min( 1040px, 78vw )` wide, and may be shown at a 2x
+// device pixel ratio, so wide viewports ask for the next step up.
+const LEAD_IMAGE_WIDTH_WIDE = 1280
 
-const pickLeadImageWidth = () =>
-  (typeof window !== 'undefined' && window.innerWidth >= 900) ? LEAD_IMAGE_WIDTH : 500
+/**
+ * Requested width for the lead/hero image. The summary endpoint only ships a
+ * ~330px thumbnail, so anything that keeps that URL as-is ends up stretched and
+ * blurry; every lead image is re-built at this width instead.
+ */
+export const leadImageWidth = () => {
+  const width = typeof window === 'undefined' ? 0 : window.innerWidth
+  if (width >= 1200) {
+    return LEAD_IMAGE_WIDTH_WIDE
+  }
+  return width >= 900 ? LEAD_IMAGE_WIDTH : 500
+}
 
 const isSvgSource = url => /\.svg(\?|$|\/)/i.test(String(url || ''))
 
@@ -89,8 +103,8 @@ export const getArticle = (lang, title) => {
       undefined
     const leadImageMeta = getMeta('mw:leadImage')
     const leadImage = leadImageMeta
-      ? thumbUrl(leadImageMeta, pickLeadImageWidth(), lang)
-      : (firstImage ? pickImageSrc(firstImage, lang, pickLeadImageWidth()) : '')
+      ? thumbUrl(leadImageMeta, leadImageWidth(), lang)
+      : (firstImage ? pickImageSrc(firstImage, lang, leadImageWidth()) : '')
 
     sections.push({
       imageUrl: leadImage || undefined,

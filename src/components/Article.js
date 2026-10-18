@@ -28,6 +28,13 @@ const ArticleBody = memo(({ content }) => {
   )
 })
 
+// On KaiOS/mobile the lead image is a full-viewport cover background and the
+// intro card is pushed to the bottom of it. From 900px the CSS replaces that
+// with a plain hero <img> band above the card (style/responsive.scss), so the
+// offset must not be applied there.
+const usesHeroBackground = () =>
+  !(window.matchMedia && window.matchMedia('(min-width: 900px)').matches)
+
 const ArticleActions = memo(({ actions, lang }) => {
   const contentI18n = useI18n(lang)
   return (
@@ -89,7 +96,7 @@ const ArticleSection = ({
     if (titleNode.getBoundingClientRect().height > MAX_TITLE_HEIGHT) {
       titleNode.classList.add('clamp')
     }
-    if (imageUrl) {
+    if (imageUrl && usesHeroBackground()) {
       const cardNode = contentRef.current.querySelector('.card')
       // Ensure .intro is completely visible to calculate its size
       cardNode.style.marginTop = 0
@@ -109,6 +116,16 @@ const ArticleSection = ({
       class='article-section'
       ref={contentRef}
       style={imageUrl ? { backgroundImage: `url(${imageUrl})` } : {}}>
+      { imageUrl && (
+        <img
+          class='article-hero'
+          src={imageUrl}
+          alt=''
+          loading='eager'
+          decoding='async'
+          fetchpriority='high'
+        />
+      ) }
       <div class='card' dir={dir}>
         <div class='intro'>
           <div class='title' data-anchor={anchor} dangerouslySetInnerHTML={{ __html: title }} />
