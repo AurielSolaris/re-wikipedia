@@ -122,5 +122,9 @@
 	"softkey-no": "Нет",
 	"settings-privacy-terms": "Конфиденциальность и условия",
 	"privacy-terms-header": "Конфиденциальность и условия",
-	"settings-touch-support": "Сенсорный ввод"
+	"settings-touch-support": "Сенсорный ввод",
+	"settings-theme": "Тема",
+	"theme-auto": "Системная",
+	"theme-light": "Светлая",
+	"theme-dark": "Тёмная"
 }

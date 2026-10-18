@@ -120,5 +120,9 @@
 	"softkey-no": "नहीं",
 	"settings-privacy-terms": "गोपनीयता और शर्तें",
 	"privacy-terms-header": "गोपनीयता और शर्तें",
-	"settings-touch-support": "टच और क्लिक"
+	"settings-touch-support": "टच और क्लिक",
+	"settings-theme": "थीम",
+	"theme-auto": "सिस्टम",
+	"theme-light": "हल्का",
+	"theme-dark": "गहरा"
 }

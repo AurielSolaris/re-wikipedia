@@ -121,5 +121,9 @@
 	"softkey-no": "না",
 	"settings-privacy-terms": "গোপনীয়তা ও শর্তাবলী",
 	"privacy-terms-header": "গোপনীয়তা ও শর্তাবলী",
-	"settings-touch-support": "টাচ ও ক্লিক"
+	"settings-touch-support": "টাচ ও ক্লিক",
+	"settings-theme": "থিম",
+	"theme-auto": "সিস্টেম",
+	"theme-light": "হালকা",
+	"theme-dark": "গাঢ়"
 }

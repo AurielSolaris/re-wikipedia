@@ -1,4 +1,8 @@
 .offline {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
 	background-color: var( --w-attention-subtle );
 	color: var( --w-fg );
 	font-size: 17px;
@@ -11,4 +15,14 @@
 	left: 0;
 	right: 0;
 	z-index: 999;
+
+	.icon {
+		flex: 0 0 auto;
+		color: var( --w-attention );
+	}
+
+	span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 }

@@ -4,6 +4,7 @@ import { memo } from 'preact/compat'
 import { useNavigation, useI18n, useSoftkey, usePopup, useOnlineStatus, useScroll } from 'hooks'
 import { ListView } from './ListView'
 import { goToRandomArticle } from './Search'
+import { BookIcon, SearchIcon, TouchIcon, InfoIcon } from './icons'
 import { goto, articleHistory } from 'utils'
 
 export const Tips = () => {
@@ -48,10 +49,10 @@ export const Tips = () => {
   }, [])
 
   const items = [
-    { title: i18n('tips-read'), action: onReadPopupSelected },
-    { title: i18n('tips-search'), action: onSearchPopupSelected },
-    { title: i18n('tips-switch'), action: onSwitchPopupSelected },
-    { title: i18n('tips-about'), action: showAboutWikipediaPopup }
+    { title: i18n('tips-read'), icon: BookIcon, action: onReadPopupSelected },
+    { title: i18n('tips-search'), icon: SearchIcon, action: onSearchPopupSelected },
+    { title: i18n('tips-switch'), icon: TouchIcon, action: onSwitchPopupSelected },
+    { title: i18n('tips-about'), icon: InfoIcon, action: showAboutWikipediaPopup }
   ]
 
   return (

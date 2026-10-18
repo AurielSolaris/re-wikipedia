@@ -1,6 +1,7 @@
 import { h } from 'preact'
 import { useEffect, useState } from 'preact/hooks'
 import { useI18n, useOnlineStatus } from 'hooks'
+import { WifiOffIcon } from './icons'
 
 export const OfflineIndicator = ({ routeUrl }) => {
   const i18n = useI18n()
@@ -15,6 +16,6 @@ export const OfflineIndicator = ({ routeUrl }) => {
   }, [isOnline, routeUrl])
 
   if (isVisible) {
-    return <div class='offline'>{i18n('offline-message')}</div>
+    return <div class='offline'><WifiOffIcon size={16} /><span>{i18n('offline-message')}</span></div>
   }
 }

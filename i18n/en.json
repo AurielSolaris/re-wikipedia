@@ -115,5 +115,9 @@
     "softkey-no": "No",
     "settings-privacy-terms": "Privacy and terms",
     "privacy-terms-header": "Privacy and terms",
-    "settings-touch-support": "Touch and click"
+    "settings-touch-support": "Touch and click",
+    "settings-theme": "Theme",
+    "theme-auto": "System",
+    "theme-light": "Light",
+    "theme-dark": "Dark"
 }

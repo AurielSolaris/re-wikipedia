@@ -125,5 +125,9 @@
 	"softkey-no": "いいえ",
 	"settings-privacy-terms": "プライバシーと利用規約",
 	"privacy-terms-header": "プライバシーと利用規約",
-	"settings-touch-support": "タッチとクリック"
+	"settings-touch-support": "タッチとクリック",
+	"settings-theme": "テーマ",
+	"theme-auto": "システム",
+	"theme-light": "ライト",
+	"theme-dark": "ダーク"
 }

@@ -2,6 +2,7 @@ import { h } from 'preact'
 import { useRef, useEffect } from 'preact/hooks'
 import { useNavigation, useI18n, useSoftkey } from 'hooks'
 import { ListView } from './ListView'
+import { PrivacyIcon, ScaleIcon } from './icons'
 import { goto } from 'utils'
 
 export const PrivacyTerms = ({ close }) => {
@@ -33,8 +34,8 @@ export const PrivacyTerms = ({ close }) => {
   }, [])
 
   const items = [
-    { title: i18n('settings-privacy'), action: goto.privacyPolicy, link: true },
-    { title: i18n('settings-term'), action: goto.termsOfUse, link: true }
+    { title: i18n('settings-privacy'), icon: PrivacyIcon, action: goto.privacyPolicy, link: true },
+    { title: i18n('settings-term'), icon: ScaleIcon, action: goto.termsOfUse, link: true }
   ]
 
   return (

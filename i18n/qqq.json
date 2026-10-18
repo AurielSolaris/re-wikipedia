@@ -120,5 +120,9 @@
 	"softkey-no": "Label for the no key\n{{identical|No}}",
 	"settings-privacy-terms": "Label of the Privacy and Terms item list. Shown in the Settings menu.",
 	"privacy-terms-header": "The header title shown in the Privacy and Terms page",
-	"settings-touch-support": "Label of the touch/click support toggle in Settings. When on, tapping an item performs the same action as the center key."
+	"settings-touch-support": "Label of the touch/click support toggle in Settings. When on, tapping an item performs the same action as the center key.",
+	"settings-theme": "Label of the theme setting in Settings. Activating it cycles the theme.",
+	"theme-auto": "Theme option: follow the device/system colour scheme.",
+	"theme-light": "Theme option: always use the light colour scheme.",
+	"theme-dark": "Theme option: always use the dark colour scheme."
 }

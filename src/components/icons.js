@@ -91,3 +91,122 @@ export const ChevronRightIcon = props => (
     <path d='m9 18 6-6-6-6' />
   </Icon>
 )
+
+export const SunIcon = props => (  <Icon {...props}>
+    <circle cx='12' cy='12' r='4' />
+    <path d='M12 2v2' />
+    <path d='M12 20v2' />
+    <path d='m4.93 4.93 1.41 1.41' />
+    <path d='m17.66 17.66 1.41 1.41' />
+    <path d='M2 12h2' />
+    <path d='M20 12h2' />
+    <path d='m6.34 17.66-1.41 1.41' />
+    <path d='m19.07 4.93-1.41 1.41' />
+  </Icon>
+)
+
+export const MoonIcon = props => (
+  <Icon {...props}>
+    <path d='M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401' />
+  </Icon>
+)
+
+export const SunMoonIcon = props => (
+  <Icon {...props}>
+    <path d='M12 2v2' />
+    <path d='M14.837 16.385a6 6 0 1 1-7.223-7.222c.624-.147.97.66.715 1.248a4 4 0 0 0 5.26 5.259c.589-.255 1.396.09 1.248.715' />
+    <path d='M16 12a4 4 0 0 0-4-4' />
+    <path d='m19 5-1.256 1.256' />
+    <path d='M20 12h2' />
+  </Icon>
+)
+
+export const SearchIcon = props => (
+  <Icon {...props}>
+    <path d='m21 21-4.34-4.34' />
+    <circle cx='11' cy='11' r='8' />
+  </Icon>
+)
+
+export const HistoryIcon = props => (
+  <Icon {...props}>
+    <path d='M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8' />
+    <path d='M3 3v5h5' />
+    <path d='M12 7v5l4 2' />
+  </Icon>
+)
+
+export const ListIcon = props => (
+  <Icon {...props}>
+    <path d='M3 5h.01' />
+    <path d='M3 12h.01' />
+    <path d='M3 19h.01' />
+    <path d='M8 5h13' />
+    <path d='M8 12h13' />
+    <path d='M8 19h13' />
+  </Icon>
+)
+
+export const TextSizeIcon = props => (
+  <Icon {...props}>
+    <path d='M21 5H3' />
+    <path d='M15 12H3' />
+    <path d='M17 19H3' />
+  </Icon>
+)
+
+export const TableIcon = props => (
+  <Icon {...props}>
+    <path d='M12 3v18' />
+    <rect width='18' height='18' x='3' y='3' rx='2' />
+    <path d='M3 9h18' />
+    <path d='M3 15h18' />
+  </Icon>
+)
+
+export const ImageIcon = props => (
+  <Icon {...props}>
+    <rect width='18' height='18' x='3' y='3' rx='2' ry='2' />
+    <circle cx='9' cy='9' r='2' />
+    <path d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21' />
+  </Icon>
+)
+
+export const ShareIcon = props => (
+  <Icon {...props}>
+    <circle cx='18' cy='5' r='3' />
+    <circle cx='6' cy='12' r='3' />
+    <circle cx='18' cy='19' r='3' />
+    <line x1='8.59' x2='15.42' y1='13.51' y2='17.49' />
+    <line x1='15.41' x2='8.59' y1='6.51' y2='10.49' />
+  </Icon>
+)
+
+export const BookIcon = props => (
+  <Icon {...props}>
+    <path d='M12 5v16' />
+    <path d='M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z' />
+  </Icon>
+)
+
+export const ScaleIcon = props => (
+  <Icon {...props}>
+    <path d='M12 3v18' />
+    <path d='m19 8 3 8a5 5 0 0 1-6 0zV7' />
+    <path d='M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1' />
+    <path d='m5 8 3 8a5 5 0 0 1-6 0zV7' />
+    <path d='M7 21h10' />
+  </Icon>
+)
+
+export const WifiOffIcon = props => (
+  <Icon {...props}>
+    <path d='M12 20h.01' />
+    <path d='M8.5 16.429a5 5 0 0 1 7 0' />
+    <path d='M5 12.859a10 10 0 0 1 5.17-2.69' />
+    <path d='M19 12.859a10 10 0 0 0-2.007-1.523' />
+    <path d='M2 8.82a15 15 0 0 1 4.177-2.643' />
+    <path d='M22 8.82a15 15 0 0 0-11.288-3.764' />
+    <path d='m2 2 20 20' />
+  </Icon>
+)

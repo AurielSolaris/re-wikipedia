@@ -1,9 +1,18 @@
 .unofficial-notice {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: var( --w-sp-2 );
 	padding: var( --w-sp-2 ) var( --w-sp-3 );
 	color: var( --w-fg-muted );
 	font-size: var( --w-fs-small );
 	line-height: var( --w-lh-body );
 	text-align: center;
+
+	.icon {
+		flex: 0 0 auto;
+		color: var( --w-attention );
+	}
 
 	p {
 		margin: 0;
