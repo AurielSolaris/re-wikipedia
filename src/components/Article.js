@@ -244,11 +244,16 @@ const ArticleInner = ({ lang, articleTitle, initialAnchor }) => {
     }
   }
 
+  // The softkeys are registered once, so Options reads the latest menu (and
+  // with it the current saved state) through a ref instead of a stale closure.
+  const showArticleMenuRef = useRef()
+  showArticleMenuRef.current = showArticleMenu
+
   useSoftkey('Article', {
     left: i18n('softkey-close'),
     onKeyLeft: () => goto.back(),
     right: i18n('softkey-menu'),
-    onKeyRight: showArticleMenu,
+    onKeyRight: () => showArticleMenuRef.current(),
     onKeyBackspace
   }, [])
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'preact/hooks'
 import { useSoftkey } from 'hooks'
 import { useTouchSupport } from './useTouchSupport'
-import { columns as gridColumns, step as gridStep, wrap as gridWrap } from '../res/GridNav.res.mjs'
+import { columns as gridColumns, step as gridStep, move as gridMove } from '../res/GridNav.res.mjs'
 
 // `axis` is 'x' for horizontal lists ('y' for vertical ones). It may also be
 // 'grid', for the desktop card grid (responsive.scss), where a press moves by a
@@ -38,16 +38,17 @@ export const useNavigation = (origin, containerRef, listRef, axis, elementsSelec
     if (!allElements.length) {
       return null
     }
-    const index = gridWrap({
-      index: getTheIndexOfTheSelectedElement(),
-      delta,
-      length: allElements.length
-    })
+    // Selectable elements before the list (the search input) each get a row
+    // of their own above the grid.
+    const list = listRef.current
+    const firstInList = list ? [].findIndex.call(allElements, element => list.contains(element)) : -1
+    // ReScript labeled arguments compile to plain positional ones.
+    const index = gridMove(getTheIndexOfTheSelectedElement(), delta, allElements.length, Math.max(firstInList, 0))
     return selectElement(allElements[index] || allElements[0], index)
   }
 
-  const navigatePrevious = () => navigateByDelta(-gridStep({ axis, columns: getColumnCount() }))
-  const navigateNext = () => navigateByDelta(gridStep({ axis, columns: getColumnCount() }))
+  const navigatePrevious = () => navigateByDelta(-gridStep(axis, getColumnCount()))
+  const navigateNext = () => navigateByDelta(gridStep(axis, getColumnCount()))
 
   // Only attributes whose value actually changes are written: each write
   // invalidates style for that card, so on a grid of dozens of glass cards a

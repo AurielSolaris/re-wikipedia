@@ -49,8 +49,10 @@ const handleNavigation = request =>
     )
 
 // Hashed assets and images never change under the same URL: cache first.
+// `Vary` is ignored: some servers (e.g. `vite preview`) send `Vary: Origin`,
+// and module scripts carry an Origin header the precache requests did not.
 const handleAsset = request =>
-  caches.match(request).then(cached => cached || fetch(request).then(response => {
+  caches.match(request, { ignoreVary: true }).then(cached => cached || fetch(request).then(response => {
     if (response.ok) {
       const copy = response.clone()
       caches.open(RUNTIME_CACHE).then(cache => cache.put(request, copy))

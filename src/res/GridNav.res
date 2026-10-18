@@ -40,3 +40,26 @@ let wrap = (~index: int, ~delta: int, ~length: int): int =>
     let next = (index + delta) % length
     next < 0 ? next + length : next
   }
+
+// Moves the selection through a list whose first `offset` elements sit above
+// the card grid, one per row (the search input on the home screen). Without
+// that, a press on the input would jump a whole row of cards, or land back on
+// the input. Leaving the grid upwards returns to the last of those elements,
+// and going past the last card wraps to the top, like `wrap` does.
+let move = (~index: int, ~delta: int, ~length: int, ~offset: int): int =>
+  if length <= 0 {
+    0
+  } else if offset <= 0 || offset >= length {
+    wrap(~index, ~delta, ~length)
+  } else if index < offset {
+    wrap(~index, ~delta=delta > 0 ? 1 : -1, ~length)
+  } else {
+    let next = index + delta
+    if next < offset {
+      offset - 1
+    } else if next >= length {
+      0
+    } else {
+      next
+    }
+  }

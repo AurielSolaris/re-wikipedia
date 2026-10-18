@@ -5,8 +5,8 @@ lib/
 *.res.mjs
 *.res.js
 *.res.cjs
-cypress/screenshots
-cypress/videos/
+test-results/
+playwright-report/
 .vscode
 Wikipedia
 WikipediaKaiOS*.zip
