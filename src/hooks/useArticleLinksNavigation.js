@@ -184,6 +184,8 @@ const makeLinkClickEvent = link => {
 
 const findVisibleLinks = (container, galleryItems) => {
   const links = container.querySelectorAll(SUPPORTED_LINKS)
+  // Read once per scan, not once per link.
+  const { width, height } = viewport()
   const visibleLinks = []
   let prevImage
   let rect
@@ -214,7 +216,7 @@ const findVisibleLinks = (container, galleryItems) => {
         continue
       }
     }
-    if (rect.x > viewport().width || rect.y > (viewport().height - 30)) {
+    if (rect.x > width || rect.y > (height - 30)) {
       // After the current page
       break
     }
@@ -225,7 +227,9 @@ const findVisibleLinks = (container, galleryItems) => {
 
 const isImageLink = link => {
   return ['FIGURE', 'FIGURE-INLINE'].includes(link.tagName) ||
-    Array.from(link.classList).some(classname => ['tsingle', 'image', 'gallerybox'].includes(classname))
+    link.classList.contains('tsingle') ||
+    link.classList.contains('image') ||
+    link.classList.contains('gallerybox')
 }
 
 const isTableLink = link => {

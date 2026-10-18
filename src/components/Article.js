@@ -291,13 +291,16 @@ export const Article = memo(({ lang, title: articleTitle, anchor: initialAnchor 
   )
 })
 
+// The last heading that starts on or before the current page. Headings come in
+// document order, so their columns only move right: stop at the first one past
+// the viewport instead of measuring every heading in the section.
 const findCurrentLocatedAnchor = ref => {
+  const { width } = viewport()
+  const headings = ref.current.querySelectorAll('.title, h3, h4')
   let element
-  Array.from(ref.current.querySelectorAll('.title, h3, h4'))
-    .find(ref => {
-      if (ref.getBoundingClientRect().left < viewport().width) {
-        element = ref
-      }
-    })
+  for (let i = 0; i < headings.length; i++) {
+    if (headings[i].getBoundingClientRect().left >= width) break
+    element = headings[i]
+  }
   return element.getAttribute('data-anchor') || element.id
 }

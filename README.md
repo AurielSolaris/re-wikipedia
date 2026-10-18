@@ -33,11 +33,12 @@ the upstream app. Highlights:
   (~92% of the viewport, 3 cards per row at 1440px and 4 on a wide monitor),
   with the arrow keys following the grid. Apple devices supported (safe-area
   insets, `apple-mobile-web-app` meta, home-screen icon).
-- **Frosted-glass desktop chrome** over a soft tinted backdrop: headers, list
-  cards, the article card, popups and the pinned softkey bar are translucent
-  panels with a 16px blur (`backdrop-filter`, with an opaque fallback and no
-  effect at all on KaiOS). Motion stays minimal — 120-200ms transitions and a
-  1px card lift, no keyframe animation.
+- **Glass desktop chrome** over a soft tinted backdrop: headers, list cards,
+  the article card, popups and the pinned softkey bar are translucent panels.
+  Only the softkey bar and popups (the surfaces content scrolls under) carry a
+  real 16px `backdrop-filter` blur, which keeps scrolling smooth; KaiOS gets no
+  glass at all. Motion is limited to short colour fades: no card lift, no
+  animated shadows, and the loading spinner is the only keyframe animation.
 - **Article hero image**: the lead image is a bounded, `object-fit: cover` band
   above the reading card on desktop (a full-screen cover background on KaiOS),
   always requested at a standard Wikimedia thumbnail step (up to 1280px) so it
@@ -145,13 +146,28 @@ padding. In-content figures grow from their 135px KaiOS thumbnails to up to
 
 ## Glassmorphic chrome
 
-`style/mixin.scss` defines `glass` / `glass-blur`; the tokens live in
+`style/mixin.scss` defines two materials; the tokens live in
 `style/tokens.scss` (`--w-glass-bg`, `--w-glass-border`, `--w-glass-shadow`,
-`--w-glass-blur`, `--w-backdrop-*`). The tinted wash the panels blur is a fixed,
-non-animated `body::before` in `style/responsive.scss`, so it only exists from
-600px up; KaiOS never pays for `backdrop-filter` and the opaque fallback keeps
-text at its WCAG AA contrast. Motion is limited to short transitions on
-hover/selection (and is clamped by `prefers-reduced-motion`).
+`--w-glass-blur`, `--w-backdrop-*`).
+
+- `glass`: translucent tint, hairline border and inset highlight, no blur. Used
+  for cards, headers, the article card and the search field. They sit over the
+  static backdrop, and blurring a smooth gradient looks the same as not
+  blurring it, so they skip the cost.
+- `glass-overlay`: `glass` plus `backdrop-filter` blur. Used only for the
+  pinned softkey bar and popups, which page content scrolls underneath.
+
+The tinted wash is a fixed, non-animated `body::before` on its own compositor
+layer in `style/responsive.scss`, so it only exists from 600px up and scrolling
+never repaints it. KaiOS never pays for `backdrop-filter`. Hover and selection
+only fade colours (`background-color` / `border-color`, 120ms): nothing moves
+and no shadow animates. `prefers-reduced-motion` turns off all transitions and
+animations.
+
+Arrow-key navigation (`hooks/useNavigation.js`) writes `nav-selected` /
+`nav-index` only on the cards whose value changes, and re-measures scroll
+position only when the selection changes, so moving through a large grid
+restyles two cards per keypress instead of all of them.
 
 ## Deploying the web app
 

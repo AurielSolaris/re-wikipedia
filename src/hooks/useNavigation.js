@@ -49,17 +49,25 @@ export const useNavigation = (origin, containerRef, listRef, axis, elementsSelec
   const navigatePrevious = () => navigateByDelta(-gridStep({ axis, columns: getColumnCount() }))
   const navigateNext = () => navigateByDelta(gridStep({ axis, columns: getColumnCount() }))
 
+  // Only attributes whose value actually changes are written: each write
+  // invalidates style for that card, so on a grid of dozens of glass cards a
+  // keypress now restyles two of them instead of all of them.
   const selectElement = (selectElement, setIndex = 0) => {
     if (selectElement) {
       [].forEach.call(getAllElements(), (element, index) => {
         const selectThisElement = element === selectElement
-        element.setAttribute('nav-selected', selectThisElement)
-        element.setAttribute('nav-index', index)
+        const selected = selectThisElement ? 'true' : 'false'
+        if (element.getAttribute('nav-selected') !== selected) {
+          element.setAttribute('nav-selected', selected)
+        }
+        if (element.getAttribute('nav-index') !== String(index)) {
+          element.setAttribute('nav-index', index)
+        }
         if (element.nodeName === 'INPUT' || element.nodeName === 'TEXTAREA') {
           if (selectThisElement) {
             element.focus()
             element.selectionStart = element.selectionEnd = element.value.length
-          } else {
+          } else if (document.activeElement === element) {
             element.blur()
           }
         }
@@ -93,13 +101,15 @@ export const useNavigation = (origin, containerRef, listRef, axis, elementsSelec
         [nextKey]: navigateNext
       })
 
+  // Keep the selection in view. Runs only when the selection changes, not on
+  // every render of the host view (typing, data updates), since each run forces
+  // a layout read.
   useEffect(() => {
     if (!listRef.current) return
     const element = getSelectedElement()
     if (!element) return
     if (element.tagName === 'INPUT') return
 
-    // todo: cache the next line since it doesn't change
     const containerRect = listRef.current.getBoundingClientRect()
     const rect = element.getBoundingClientRect()
     if (rect.bottom > containerRect.bottom) {
@@ -110,7 +120,7 @@ export const useNavigation = (origin, containerRef, listRef, axis, elementsSelec
       // scroll up
       listRef.current.scrollTop -= (containerRect.top - rect.top)
     }
-  })
+  }, [current])
 
   // Touch / click support: tapping a selectable element selects it and then
   // triggers the very same action as the center key. We do that by dispatching

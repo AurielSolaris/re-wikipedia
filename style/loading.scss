@@ -20,7 +20,10 @@
 	}
 
 	.moon {
+		// The only keyframe animation in the app: it is the loading feedback,
+		// and it is transform-only so it stays on the compositor.
 		animation: rotation 2.5s infinite linear;
+		transform: translate( -50%, -50% );
 		position: absolute;
 		top: 45%;
 		left: 50%;
@@ -43,6 +46,6 @@
 	}
 
 	to {
-		transform: translate( -50%, -50% ) rotate( 359deg );
+		transform: translate( -50%, -50% ) rotate( 360deg );
 	}
 }

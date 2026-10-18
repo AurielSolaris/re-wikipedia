@@ -28,8 +28,7 @@
 		padding: var( --w-sp-2 ) var( --w-sp-3 );
 		height: 40px;
 		border: solid 1px var( --w-border-interactive );
-		transition: box-shadow var( --w-dur-1 ) var( --w-ease-ui ),
-			border-color var( --w-dur-1 ) var( --w-ease-ui );
+		transition: border-color var( --w-dur-1 ) var( --w-ease-ui );
 
 		&::placeholder {
 			color: var( --w-fg-subtle );

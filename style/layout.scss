@@ -56,14 +56,13 @@ textarea:focus-visible,
 	outline-offset: 2px;
 }
 
-// Honor the reduced-motion user preference (WCAG 2.3.3).
+// Honor the reduced-motion user preference (WCAG 2.3.3): no motion at all.
 @media ( prefers-reduced-motion: reduce ) {
 	*,
 	*:before,
 	*:after {
-		animation-duration: 100ms !important;
-		animation-iteration-count: 1 !important;
-		transition-duration: 100ms !important;
+		animation: none !important;
+		transition: none !important;
 		scroll-behavior: auto !important;
 	}
 }

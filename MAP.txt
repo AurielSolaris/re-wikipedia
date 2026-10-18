@@ -184,7 +184,9 @@ useNavigation.js
   Tracks the selected element via nav-selected/nav-index attributes, scrolls it
   into view, and wires arrow keys through useSoftkey. The 'grid' axis follows
   the desktop card grid: up/down move a whole row, left/right a single card
-  (column count + wrap maths live in src/res/GridNav.res).
+  (column count + wrap maths live in src/res/GridNav.res). Only attributes
+  that change are rewritten per keypress, and the scroll-into-view check runs
+  only when the selection changes.
 
 useTheme.js
   Subscribes to the theme preference ['auto' | 'light' | 'dark'] and returns
@@ -526,12 +528,14 @@ index.js
     responsive last (large-screen overrides)
   Each SCSS file styles the component/view of the same name. tokens.scss holds
   the GitHub Primer design tokens (--w-*), variables.scss/mixin.scss provide
-  layout variables, .clampMixin and the `glass`/`glass-blur` frosted-surface
-  mixins, fontsizes.scss drives the font-size-N body classes set by
+  layout variables, .clampMixin and the glass mixins (`glass`: translucent,
+  no blur, for cards/headers; `glass-overlay`: adds backdrop-filter blur, only
+  for the softkey bar and popups; `glass-blur`: the blur alone), fontsizes.scss drives the font-size-N body classes set by
   App/TextSize. responsive.scss upgrades >= 600 / 900 / 1920px viewports only
   (KaiOS base untouched): it adds the tinted body::before backdrop the glass
   blurs, from 900px turns the list screens into the multi-column card grid that
-  useNavigation's 'grid' axis follows, swaps the article hero background for a
+  useNavigation's 'grid' axis follows (cards only fade colour on hover/
+  selection, no lift or animated shadow), swaps the article hero background for a
   real bounded <img> band, pins the softkey bar with position: fixed, and lets
   in-content figures grow past their 135px KaiOS size.
 

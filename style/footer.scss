@@ -26,8 +26,7 @@
 				border-radius: var( --w-r-md );
 				background-color: var( --w-canvas );
 				border: solid 1px var( --w-border );
-				transition: box-shadow var( --w-dur-2 ) var( --w-ease-ui ),
-					background-color var( --w-dur-1 ) var( --w-ease-ui );
+				transition: background-color var( --w-dur-1 ) var( --w-ease-ui );
 
 				@media ( hover: hover ) {
 					&:hover {
