@@ -1,6 +1,41 @@
 import {
-  cachedFetch, buildPcsUrl, buildCoreRestUrl, canonicalizeTitle
+  cachedFetch, buildPcsUrl, buildCoreRestUrl, canonicalizeTitle, fixImgSrc, thumbUrl
 } from 'utils'
+
+// Bounded image widths. The lead image is used as a full-bleed card background
+// (and shared with page previews), in-content images render inside a
+// ~240-1920px column. `thumbUrl` rounds these up to a standard Wikimedia
+// thumbnail step, which is required since non-standard widths now 400.
+const CONTENT_IMAGE_WIDTH = 500
+const LEAD_IMAGE_WIDTH = 960
+
+const pickLeadImageWidth = () =>
+  (typeof window !== 'undefined' && window.innerWidth >= 900) ? LEAD_IMAGE_WIDTH : 500
+
+const isSvgSource = url => /\.svg(\?|$|\/)/i.test(String(url || ''))
+
+// Wikimedia already hands us valid, standard-size thumbnails: `data-src` on the
+// PCS lazy-load placeholders and the `srcset` candidates. Only fall back to
+// building a thumbnail (at a standard size) when there is nothing better.
+const pickImageSrc = (node, lang, width) => {
+  const srcset = node.getAttribute('srcset')
+  const smallest = srcset && srcset.split(',')
+    .map(part => part.trim().split(/\s+/)[0])
+    .filter(Boolean)[0]
+
+  const source = node.getAttribute('data-src') || smallest || node.getAttribute('src')
+  if (!source) {
+    return ''
+  }
+
+  // Inline icons and logos ship as SVG; keep the rendition the API provided
+  // instead of rasterising them at a full content width.
+  if (isSvgSource(source)) {
+    return fixImgSrc(source, lang)
+  }
+
+  return thumbUrl(source, width, lang)
+}
 
 export const getArticle = (lang, title) => {
   const fallbackTitle = canonicalizeTitle(title)
@@ -52,11 +87,13 @@ export const getArticle = (lang, title) => {
       (leadParagraph && leadParagraph.textContent) ||
       getMeta('description') ||
       undefined
-    const leadImage = getMeta('mw:leadImage') ||
-      (firstImage && firstImage.getAttribute('src'))
+    const leadImageMeta = getMeta('mw:leadImage')
+    const leadImage = leadImageMeta
+      ? thumbUrl(leadImageMeta, pickLeadImageWidth(), lang)
+      : (firstImage ? pickImageSrc(firstImage, lang, pickLeadImageWidth()) : '')
 
     sections.push({
-      imageUrl: leadImage && fixImageUrl(leadImage, lang),
+      imageUrl: leadImage || undefined,
       title: articleTitle,
       anchor: canonicalizeTitle(articleTitle),
       description: articleDescription,
@@ -125,14 +162,6 @@ export const getArticle = (lang, title) => {
   }, true, 'text', { 'X-Analytics': 'pageview=1' })
 }
 
-const fixImageUrl = (htmlString, lang) => {
-  // The app is served from the app:// protocol so protocol-relative
-  // image sources don't work.
-  return htmlString
-    .replace(/\/\//gi, 'https://')
-    .replace(/\/w\/extensions\//gi, `https://${lang}.wikipedia.org/w/extensions/`)
-}
-
 const modifyHtmlText = (text, lang) => {
   const parser = new DOMParser()
   const doc = parser.parseFromString(text, 'text/html')
@@ -146,24 +175,37 @@ const modifyHtmlText = (text, lang) => {
   // enable lazyload image
   const imageSpanNodes = doc.querySelectorAll('span.pcs-lazy-load-placeholder')
   for (const imageSpanNode of imageSpanNodes) {
-    const source = imageSpanNode.getAttribute('data-src')
-    const image = document.createElement('img')
-    image.src = source
-    image.height = imageSpanNode.getAttribute('data-height')
-    imageSpanNode.parentNode.appendChild(image)
+    const source = pickImageSrc(imageSpanNode, lang, CONTENT_IMAGE_WIDTH)
+    if (source) {
+      const image = doc.createElement('img')
+      image.setAttribute('src', source)
+      image.setAttribute('loading', 'lazy')
+      image.setAttribute('decoding', 'async')
+      imageSpanNode.parentNode.appendChild(image)
 
-    if (!imageSpanNode.parentNode.classList.contains('image')) {
-      imageSpanNode.parentNode.classList += ' image'
+      if (!imageSpanNode.parentNode.classList.contains('image')) {
+        imageSpanNode.parentNode.classList += ' image'
+      }
     }
-
     imageSpanNode.remove()
   }
 
-  // fix image node
+  // fix image node: normalise the URL, downscale to a thumbnail and drop the
+  // responsive candidates so the browser can't pick a huge variant.
   const imageNodes = doc.querySelectorAll('img')
   for (const imageNode of imageNodes) {
-    const url = fixImageUrl(imageNode.getAttribute('src'), lang)
-    imageNode.setAttribute('src', url)
+    const url = pickImageSrc(imageNode, lang, CONTENT_IMAGE_WIDTH)
+    if (url) {
+      imageNode.setAttribute('src', url)
+    } else {
+      imageNode.removeAttribute('src')
+    }
+    imageNode.removeAttribute('srcset')
+    imageNode.removeAttribute('sizes')
+    imageNode.removeAttribute('data-src')
+    imageNode.removeAttribute('data-height')
+    imageNode.setAttribute('loading', 'lazy')
+    imageNode.setAttribute('decoding', 'async')
   }
 
   return doc.body.innerHTML

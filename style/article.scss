@@ -103,6 +103,13 @@
 					max-width: 100%;
 				}
 
+				// Never let a large or oddly sized image distort or overflow the
+				// multi-column layout: bound the width, keep the aspect ratio.
+				img {
+					max-width: 100%;
+					height: auto;
+				}
+
 				.pcs-edit-section-header,
 				.pcs-edit-section-link-container,
 				.pcs-collapse-table-collapsed-container,

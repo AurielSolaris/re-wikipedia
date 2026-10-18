@@ -255,7 +255,9 @@ index.js
 
 getArticle.js
   Fetches the mobile-html article, parses sections, table of contents,
-  infobox, and references, and rewrites image URLs. Uses utils/cachedFetch,
+  infobox, and references, and rewrites image URLs to sized, lazy-loaded
+  thumbnails. Reuses the API's own `data-src`/`srcset` renditions and otherwise
+  builds one with utils/thumbUrl (standard sizes only). Uses utils/cachedFetch,
   buildPcsUrl, canonicalizeTitle. Used by useArticle.
 
 getArticleSummary.js
@@ -349,7 +351,9 @@ articleTextSize.js Font-size preference (get/set, MIN/MAX) in localStorage.
 
 canonicalizeTitle.js  spaces -> underscores.
 normalizeTitle.js     underscores -> spaces.
-fixImgSrc.js          Fixes protocol-relative / extension image paths.
+fixImgSrc.js          fixImgSrc normalises protocol-relative / extension image
+                      paths; thumbUrl snapToThumbStep builds a thumbnail URL at
+                      a standard Wikimedia size (THUMB_STEPS).
 viewport.js           { width, height } of window.
 
 userCountry.js     Stores/reads the GeoIP country in localStorage
