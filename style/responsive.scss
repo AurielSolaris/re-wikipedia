@@ -1,0 +1,107 @@
+// Responsive / large-screen layer.
+//
+// The KaiOS experience (small, keypad-driven, full-bleed) is the base. These
+// min-width queries only *upgrade* larger viewports (tablet, desktop, WUXGA),
+// so small devices and the legacy build are untouched.
+
+html {
+	-webkit-text-size-adjust: 100%;
+}
+
+// Mobile Safari / iOS: use dynamic viewport units where available so the
+// URL bar does not clip the layout.
+@supports ( height: 100dvh ) {
+	.search {
+		height: 100dvh;
+	}
+
+	.loading-planet {
+		height: calc( 100dvh - #{$softkeysHeight} - 39px );
+	}
+}
+
+// Tablet and up: calmer, slightly larger type.
+@media ( min-width: 600px ) {
+	:root {
+		--w-fs-body: 15px;
+		--w-fs-title: 16px;
+		--w-fs-small: 13px;
+		--w-fs-h2: 19px;
+	}
+
+	.listview .list,
+	.radiolistview .list,
+	.listview .header,
+	.radiolistview .header {
+		max-width: 720px;
+		left: 0;
+		right: 0;
+		margin: 0 auto;
+	}
+}
+
+// Desktop: center the shell and turn the paged KaiOS article into a single
+// readable scrolling column.
+@media ( min-width: 900px ) {
+	:root {
+		--w-fs-body: 16px;
+		--w-fs-title: 17px;
+		--w-fs-h2: 20px;
+		--w-fs-h1: 26px;
+	}
+
+	.search {
+		.double-u {
+			width: 76px;
+			padding-top: 88px;
+		}
+
+		input {
+			height: 44px;
+		}
+	}
+
+	.article {
+		overflow: visible;
+
+		.article-section {
+			column-width: auto;
+			-moz-column-width: auto;
+			width: 100%;
+			max-width: 760px;
+			height: auto;
+			min-height: auto;
+			margin: 0 auto;
+			padding: var( --w-sp-5 ) var( --w-sp-4 );
+		}
+	}
+
+	.article-footer .content,
+	.listview .list,
+	.radiolistview .list,
+	.listview .header,
+	.radiolistview .header {
+		max-width: 760px;
+	}
+}
+
+// WUXGA (1920x1200) and beyond.
+@media ( min-width: 1920px ) {
+	:root {
+		--w-fs-body: 17px;
+		--w-fs-title: 18px;
+		--w-fs-h2: 22px;
+	}
+
+	.article .article-section,
+	.article-footer .content {
+		max-width: 860px;
+	}
+
+	.listview .list,
+	.radiolistview .list,
+	.listview .header,
+	.radiolistview .header {
+		max-width: 860px;
+	}
+}

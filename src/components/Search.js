@@ -1,6 +1,10 @@
 import { h } from 'preact'
 import { useRef, useEffect } from 'preact/hooks'
-import { ListView, OfflinePanel, Consent, SearchLoading } from 'components'
+import { ListView } from './ListView'
+import { OfflinePanel } from './OfflinePanel'
+import { Consent } from './Consent'
+import { SearchLoading } from './SearchLoading'
+import { UnofficialNotice } from './UnofficialNotice'
 import {
   useNavigation, useSearch, useI18n, useSoftkey,
   useOnlineStatus, useTracking, usePopup, useHistoryState,
@@ -147,6 +151,7 @@ export const Search = () => {
   return (
     <div class='search' ref={containerRef}>
       <img class='double-u' src='images/w.svg' style={{ display: (hideW ? 'none' : 'block') }} />
+      { !hideW && <UnofficialNotice /> }
       { showSearchBar && <input ref={inputRef} type='text' placeholder={i18n('search-placeholder')} value={inputText} onInput={onInput} data-selectable maxlength='255' /> }
       { showResultsList && <ListView header={i18n('header-search')} items={searchResults} containerRef={listRef} empty={i18n('no-result-found')} /> }
       { showLoading && <SearchLoading /> }

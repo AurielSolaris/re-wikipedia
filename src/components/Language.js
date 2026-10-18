@@ -2,7 +2,7 @@ import { h } from 'preact'
 import { useState, useRef, useEffect, useContext } from 'preact/hooks'
 import { DirectionContext } from 'contexts'
 import { useNavigation, useI18n, useSoftkey, usePopup, useSearchLanguage } from 'hooks'
-import { RadioListView } from 'components'
+import { RadioListView } from './RadioListView'
 import { setAppLanguage, getAppLanguage, getDirection, goto } from 'utils'
 
 export const Language = () => {

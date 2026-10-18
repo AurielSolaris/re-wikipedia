@@ -1,0 +1,140 @@
+// Design tokens — GitHub (Primer) Light / Dark palettes + our own
+// spacing, radius, type and motion scales.
+//
+// Palette values are GitHub's open-source Primer primitives (MIT). They are
+// WCAG AA verified for the roles they are used in; the ratios noted below are
+// measured against the canvas of the matching theme.
+//
+// Theme resolution:
+//   :root                       -> light (default, also the KaiOS/Firefox 37 fallback)
+//   @media (prefers-color-scheme: dark) -> dark
+//   [data-theme='light'|'dark'] -> explicit override (wins over the media query)
+//
+// No proprietary third-party brand colors or fonts are used here.
+
+@mixin w-light {
+	--w-canvas: #ffffff;
+	--w-canvas-subtle: #f6f8fa;
+	--w-canvas-inset: #f6f8fa;
+	--w-canvas-overlay: rgba(255, 255, 255, 0.85);
+
+	--w-fg: #1f2328;            // 16.1:1 on canvas
+	--w-fg-muted: #59636e;      // 6.0:1 on canvas
+	--w-fg-subtle: #6e7781;     // 4.6:1 on canvas
+
+	--w-border: #d0d7de;        // decorative hairline (separators)
+	--w-border-muted: #d8dee4;
+	--w-border-interactive: #6e7781; // form controls: >= 3:1 (WCAG 1.4.11)
+
+	--w-accent: #0969da;        // 4.5:1 on canvas; white text on it: 4.5:1
+	--w-accent-emphasis: #0969da;
+	--w-accent-hover: #0860ca;
+	--w-accent-active: #0757ba;
+	--w-accent-subtle: #ddf4ff; // selection tint (muted text on it: >= 4.5:1)
+	--w-on-accent: #ffffff;
+
+	--w-success: #1a7f37;       // 4.6:1 on canvas
+	--w-attention: #9a6700;     // 5.4:1 on canvas
+	--w-attention-subtle: #fff8c5;
+	--w-danger: #d1242f;        // 5.1:1 on canvas
+	--w-danger-subtle: #ffebe9;
+
+	--w-focus: #0969da;         // focus ring color (>= 3:1)
+	--w-scrim: rgba(31, 35, 40, 0.55);
+	--w-shadow-overlay: 0 8px 24px rgba(31, 35, 40, 0.15);
+	--w-shadow-raised: 0 3px 12px rgba(31, 35, 40, 0.12);
+
+	// The bundled "W" mark is white; on a light canvas it is darkened so it
+	// keeps a 21:1 contrast. No asset change is needed.
+	--w-logo-filter: brightness(0);
+}
+
+@mixin w-dark {
+	--w-canvas: #0d1117;
+	--w-canvas-subtle: #161b22;
+	--w-canvas-inset: #010409;
+	--w-canvas-overlay: rgba(22, 27, 34, 0.9);
+
+	--w-fg: #e6edf3;            // 13.9:1 on canvas
+	--w-fg-muted: #848d97;      // 5.9:1 on canvas
+	--w-fg-subtle: #6e7681;     // 4.6:1 on canvas
+
+	--w-border: #30363d;
+	--w-border-muted: #21262d;
+	--w-border-interactive: #6e7681;
+
+	--w-accent: #4493f8;        // 6.9:1 on canvas
+	--w-accent-emphasis: #1f6feb; // white text on it: 5.3:1
+	--w-accent-hover: #388bfd;
+	--w-accent-active: #2f7ae5;
+	--w-accent-subtle: rgba(56, 139, 253, 0.15);
+	--w-on-accent: #ffffff;
+
+	--w-success: #3fb950;
+	--w-attention: #d29922;
+	--w-attention-subtle: rgba(187, 128, 9, 0.15);
+	--w-danger: #f85149;        // 6.4:1 on canvas
+	--w-danger-subtle: rgba(248, 81, 73, 0.15);
+
+	--w-focus: #4493f8;
+	--w-scrim: rgba(1, 4, 9, 0.7);
+	--w-shadow-overlay: 0 8px 24px rgba(1, 4, 9, 0.6);
+	--w-shadow-raised: 0 3px 12px rgba(1, 4, 9, 0.5);
+
+	--w-logo-filter: none;
+}
+
+:root {
+	@include w-light;
+	color-scheme: light;
+
+	// Spacing — 4px base, 8px rhythm.
+	--w-sp-1: 4px;
+	--w-sp-2: 8px;
+	--w-sp-3: 12px;
+	--w-sp-4: 16px;
+	--w-sp-5: 24px;
+	--w-sp-6: 32px;
+
+	// Radius — crisp and modest.
+	--w-r-sm: 3px;
+	--w-r-md: 6px;
+	--w-r-lg: 10px;
+	--w-r-pill: 999px;
+
+	// Type.
+	--w-font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+		'Helvetica Neue', Arial, sans-serif;
+	--w-fs-caption: 11px;
+	--w-fs-small: 12px;
+	--w-fs-body: 14px;
+	--w-fs-title: 15px;
+	--w-fs-h2: 17px;
+	--w-fs-h1: 22px;
+	--w-lh-tight: 1.2;
+	--w-lh-body: 1.45;
+
+	// Motion — generic curves, honored only when motion is allowed.
+	--w-dur-1: 120ms;
+	--w-dur-2: 200ms;
+	--w-dur-3: 320ms;
+	--w-ease-ui: cubic-bezier(0.4, 0, 0.2, 1);
+	--w-ease-move: cubic-bezier(0.65, 0, 0.45, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		@include w-dark;
+		color-scheme: dark;
+	}
+}
+
+[data-theme='light'] {
+	@include w-light;
+	color-scheme: light;
+}
+
+[data-theme='dark'] {
+	@include w-dark;
+	color-scheme: dark;
+}

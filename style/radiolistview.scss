@@ -1,0 +1,148 @@
+.radiolistview {
+	.header {
+		height: $pageHeaderHeight;
+		max-height: $pageHeaderHeight;
+		background-color: var( --w-canvas-subtle );
+		color: var( --w-fg );
+		border-bottom: 1px solid var( --w-border );
+		box-sizing: border-box;
+		padding: 3px 0;
+		font-size: var( --w-fs-h2 );
+		font-weight: 600;
+		text-align: center;
+	}
+
+	.list {
+		width: 100%;
+		background-color: var( --w-canvas );
+		text-align: left;
+		overflow: scroll;
+		-webkit-overflow-scrolling: touch;
+		position: absolute;
+
+		.item {
+			width: 100%;
+			height: 49px;
+			margin: 0;
+			padding: 6px 10px;
+			display: flex;
+			justify-content: space-between;
+			border-bottom: 1px solid var( --w-border-muted );
+			transition: background-color var( --w-dur-1 ) var( --w-ease-ui );
+
+			@media ( hover: hover ) {
+				&:hover {
+					background-color: var( --w-canvas-subtle );
+				}
+			}
+
+			.icon {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				width: 20px;
+				min-width: 20px;
+				margin-right: 10px;
+				color: var( --w-fg-muted );
+			}
+
+			.info {
+				height: 100%;
+				overflow: hidden;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+
+				.title {
+					font-size: var( --w-fs-h2 );
+					color: var( --w-fg );
+					white-space: nowrap;
+					text-overflow: ellipsis;
+					overflow: hidden;
+				}
+
+				.description {
+					font-size: var( --w-fs-small );
+					color: var( --w-fg-muted );
+					white-space: nowrap;
+					text-overflow: ellipsis;
+					overflow: hidden;
+				}
+			}
+
+			&[ dir='rtl' ] {
+				direction: ltr;
+				justify-content: flex-end;
+				text-align: right;
+
+				.info {
+					padding-right: 6px;
+				}
+			}
+
+			// Selection: tint + leading accent bar + weight (not color alone).
+			&[ nav-selected=true ] {
+				background-color: var( --w-accent-subtle );
+				color: var( --w-fg );
+				box-shadow: inset 3px 0 0 0 var( --w-accent );
+
+				.info .title {
+					font-weight: 600;
+				}
+
+				.icon {
+					color: var( --w-accent );
+				}
+
+				.radio-container {
+					.radio {
+						&.selected {
+							outline-color: var( --w-canvas );
+							border-color: var( --w-canvas );
+						}
+					}
+				}
+			}
+
+			.radio-container {
+				margin-top: 7px;
+
+				.radio {
+					width: 22px;
+					height: 22px;
+					border-radius: var( --w-r-pill );
+					border: 2px solid var( --w-border-interactive );
+
+					&.selected {
+						border: 2px solid var( --w-accent );
+						outline: 6px solid var( --w-accent );
+						outline-offset: -11px;
+						-moz-outline-radius: 11px;
+					}
+				}
+			}
+		}
+
+		.empty {
+			display: flex;
+			height: 100%;
+			align-items: center;
+			justify-content: center;
+			padding: 0 10px;
+			font-size: var( --w-fs-h2 );
+			color: var( --w-fg-muted );
+		}
+	}
+}
+
+[ dir='rtl' ] {
+	.radiolistview {
+		.list {
+			.item {
+				&[ nav-selected=true ] {
+					box-shadow: inset -3px 0 0 0 var( --w-accent );
+				}
+			}
+		}
+	}
+}

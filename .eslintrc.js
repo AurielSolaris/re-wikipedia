@@ -6,8 +6,7 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'standard',
-    'standard-preact',
-    "plugin:cypress/recommended"
+    'standard-preact'
   ],
   globals: {
     Atomics: 'readonly',
@@ -17,15 +16,13 @@ module.exports = {
     ecmaFeatures: {
       jsx: true
     },
-    ecmaVersion: 2018,
+    ecmaVersion: 2020,
     sourceType: 'module'
   },
   "plugins": [
-    "cypress",
     "no-only-tests"
   ],
   "rules": {
-    "no-only-tests/no-only-tests": "error",
-    "cypress/no-unnecessary-waiting": "warn"
+    "no-only-tests/no-only-tests": "error"
   }
 }

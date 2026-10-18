@@ -7,9 +7,9 @@ import {
   checkHasDeviceLanguageChanged, loadAllLanguagesMessages, consentMessages,
   getDirection
 } from 'utils'
-import { App } from 'components'
+import { App } from './components/App'
 
-import '../style/style.less'
+import '../style/style.scss'
 
 if (checkHasDeviceLanguageChanged()) {
   setDeviceLanguage()

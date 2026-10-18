@@ -1,0 +1,60 @@
+.aboutapp {
+	.header {
+		height: $pageHeaderHeight;
+		max-height: $pageHeaderHeight;
+		background-color: var( --w-canvas-subtle );
+		color: var( --w-fg );
+		border-bottom: 1px solid var( --w-border );
+		box-sizing: border-box;
+		padding: 3px 0;
+		font-size: var( --w-fs-h2 );
+		font-weight: 600;
+		text-align: center;
+	}
+
+	.body {
+		background-color: var( --w-canvas );
+		height: $availableHeight;
+		padding-top: 30px;
+		text-align: center;
+
+		@media #{$landscape} {
+			padding-top: 2px;
+		}
+	}
+
+	.image {
+		background-position: center center;
+		background-repeat: no-repeat;
+	}
+
+	img {
+		max-width: 60px;
+	}
+
+	.version {
+		margin-top: -10px;
+		font-size: var( --w-fs-caption );
+		line-height: normal;
+		color: var( --w-fg-subtle );
+	}
+
+	.message {
+		padding-right: 32px;
+		padding-left: 32px;
+		margin-top: 30px;
+		font-size: var( --w-fs-body );
+
+		@media #{$landscape} {
+			margin-top: 0;
+		}
+	}
+
+	p {
+		font-weight: normal;
+		font-stretch: normal;
+		font-style: normal;
+		letter-spacing: normal;
+		color: var( --w-fg-muted );
+	}
+}

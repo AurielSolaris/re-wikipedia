@@ -1,6 +1,7 @@
 import { h } from 'preact'
 import { useRef } from 'preact/hooks'
-import { ReferencePreview, Gallery } from 'components'
+import { ReferencePreview } from './ReferencePreview'
+import { Gallery } from './Gallery'
 import {
   useScroll, usePopup, useConfirmDialog,
   useI18n, useSoftkey, useArticleLinksNavigation

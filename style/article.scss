@@ -1,0 +1,283 @@
+.article {
+
+	// This needs to be set on
+	// the parent of the element with columns.
+	overflow-y: hidden;
+	overflow-x: scroll;
+	overflow: -moz-scrollbars-none;
+	background-color: var( --w-canvas );
+
+	.article-section {
+		height: calc( 100vh - #{$softkeysHeight} );
+		width: 100vw;
+		column-width: 100vw;
+		column-gap: 0;
+		column-fill: auto;
+		// Firefox 48 needs the -moz prefix for column attributes
+		-moz-column-width: 100vw;
+		-moz-column-gap: 0;
+		-moz-column-fill: auto;
+		padding-top: 10px;
+		// This prevents long words like URLs from overflowing
+		// onto the next column.
+		word-wrap: break-word;
+		background-size: cover;
+		background-position: center;
+		background-repeat: no-repeat;
+
+		.card {
+			padding: 10px;
+			border-radius: 5px;
+			box-shadow: var( --w-shadow-raised );
+			border: solid 1px var( --w-canvas-subtle );
+			margin: 15px 5px 0 5px;
+			// Use an rgba filter to achieve transparency
+			// because 'opacity' breaks the column layout in Chrome.
+			background-color: var( --w-canvas-overlay );
+
+			.title {
+				line-height: 28px;
+
+				@include clampMixin( 140px );
+			}
+
+			.desc {
+				line-height: 19px;
+				margin-top: 5px;
+				color: var( --w-fg );
+			}
+
+			.indicator {
+				width: 100%;
+				position: relative;
+				text-align: center;
+
+				img {
+					width: 20px;
+					height: 20px;
+				}
+			}
+
+			.article-actions {
+				display: flex;
+				justify-content: space-around;
+				margin-top: 12px;
+
+				&-button {
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+					padding: 4px;
+
+					img {
+						width: 24px;
+						height: 24px;
+						padding: 4px;
+					}
+
+					label {
+						color: var( --w-accent );
+						font-size: $smallFont;
+						font-weight: bold;
+						display: none;
+					}
+
+					&[data-selected='true'] {
+						-moz-outline-radius: 16px;
+						border-radius: 16px;
+						outline: solid 2px var( --w-accent );
+						outline-offset: 1px;
+						background-color: var( --w-accent-subtle );
+
+						label {
+							display: inline;
+						}
+					}
+				}
+			}
+
+			.article-content {
+				line-height: 24.5px;
+
+				* {
+					max-width: 100%;
+				}
+
+				.pcs-edit-section-header,
+				.pcs-edit-section-link-container,
+				.pcs-collapse-table-collapsed-container,
+				.pcs-ref-backlink-container {
+					display: none;
+				}
+
+				.pcs-collapse-table-container {
+					display: block;
+					width: 100%;
+					padding: 4px;
+					overflow: hidden;
+					background-color: var( --w-canvas-subtle ) !important;
+					border-radius: 2px !important;
+					box-shadow: inset 0 0 0 1px var( --w-canvas-subtle ) !important;
+					border: solid 0.5px var( --w-border ) !important;
+
+					&[data-selected='true'] {
+						border: solid 0.5px var( --w-accent ) !important;
+						background-color: var( --w-accent-subtle ) !important;
+					}
+				}
+
+				table.wikitable {
+					display: none; // hide legacy table
+				}
+
+				figure,
+				figure-inline,
+				.gallerybox {
+					position: relative;
+					width: 135px;
+					margin-left: auto;
+					margin-right: auto;
+					text-align: center;
+					box-shadow: 0 1px 3px 0 rgba( 0, 0, 0, 0.15 );
+					border: solid 0.5px var( --w-border );
+					line-height: 32px;
+
+					img {
+						max-height: 90px;
+						width: auto;
+					}
+
+					figcaption,
+					.gallerytext {
+						font-size: 71.42%; // 10/14 x 100
+						line-height: normal;
+						padding: 5px;
+						background-color: var( --w-canvas-subtle );
+						margin-top: -10px;
+					}
+
+					&[data-selected='true'] {
+						outline: solid 2px var( --w-accent );
+						outline-offset: 1px;
+						background-color: var( --w-accent-subtle );
+					}
+				}
+
+				.thumb {
+					all: unset;
+
+					.thumbinner {
+						width: auto !important;
+
+						.trow {
+							margin-bottom: 10px;
+
+							.tsingle {
+								position: relative;
+								width: 135px !important;
+								margin-left: auto;
+								margin-right: auto;
+								text-align: center;
+								box-shadow: 0 1px 3px 0 rgba( 0, 0, 0, 0.15 );
+								border: solid 0.5px var( --w-border );
+								line-height: 32px;
+
+								.thumbimage {
+									height: auto !important;
+
+									img {
+										height: auto !important;
+									}
+								}
+
+								&[data-selected='true'] {
+									outline: solid 2px var( --w-accent );
+						outline-offset: 1px;
+									background-color: var( --w-accent-subtle );
+								}
+							}
+						}
+
+						.thumbcaption {
+							font-size: 71.42%; // 10/14 x 100
+							line-height: normal;
+							padding: 5px;
+							background-color: var( --w-canvas-subtle );
+							margin-top: -10px;
+						}
+					}
+				}
+
+				dd {
+					margin-left: 0;
+					padding-left: 1em;
+				}
+
+				ul {
+					padding-left: 1em;
+
+					&.gallery {
+						list-style-type: none;
+						padding-left: 0;
+
+						.gallerybox {
+							width: 100%;
+							text-align: center;
+
+							div.thumb {
+								width: 100% !important;
+							}
+						}
+					}
+				}
+
+				ol {
+					&.references {
+						padding-left: 2.25em;
+					}
+				}
+
+				.quotebox {
+					// width: 100% !important;
+				}
+
+				.hatnote,
+				.dablink,
+				.rellink {
+					padding: 5px 7px;
+					background-color: var( --w-canvas-subtle );
+				}
+
+				blockquote {
+					margin: 10px;
+				}
+
+				.listaref {
+					all: inherit !important;
+				}
+
+				/* stylelint-disable */
+				#skip-to-top-button,
+				#skip-to-bottom-button {
+					display: none;
+				}
+				/* stylelint-enable */
+			}
+		}
+	}
+
+	&.footer {
+		.article-section {
+			padding-top: 0;
+
+			.card {
+				padding: 0;
+				margin: 0;
+
+				.title {
+					display: none;
+				}
+			}
+		}
+	}
+}

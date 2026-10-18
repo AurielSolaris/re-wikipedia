@@ -1,0 +1,81 @@
+.search {
+	background-color: var( --w-canvas );
+	text-align: center;
+	height: 100vh;
+	padding-bottom: env( safe-area-inset-bottom );
+
+	.double-u {
+		width: 60px;
+		padding-top: 52px;
+		padding-bottom: 5px;
+		margin: 0 auto;
+		// The bundled mark ships white; keep it legible on both themes.
+		filter: var( --w-logo-filter );
+
+		@media #{$landscape} {
+			padding-top: 20px;
+		}
+	}
+
+	input {
+		width: calc( 100vw - 20px );
+		max-width: 560px;
+		font-size: 16px; // >= 16px prevents iOS input zoom
+		color: var( --w-fg );
+		background-color: var( --w-canvas );
+		margin: var( --w-sp-2 ) 0 var( --w-sp-3 ) 0;
+		border-radius: var( --w-r-md );
+		padding: var( --w-sp-2 ) var( --w-sp-3 );
+		height: 40px;
+		border: solid 1px var( --w-border-interactive );
+		transition: box-shadow var( --w-dur-1 ) var( --w-ease-ui ),
+			border-color var( --w-dur-1 ) var( --w-ease-ui );
+
+		&::placeholder {
+			color: var( --w-fg-subtle );
+		}
+
+		&:focus {
+			outline: none;
+			border-color: var( --w-accent );
+			box-shadow: 0 0 0 2px var( --w-accent );
+		}
+	}
+
+	.searchmatch {
+		font-weight: 600;
+	}
+
+	.list {
+		top: 68px;
+		bottom: $softkeysHeight;
+	}
+
+	.unofficial-notice {
+		max-width: 560px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.loading-planet {
+		height: calc( 100vh - #{$softkeysHeight} - 39px ); // 39px is the input container height
+
+		@media #{$landscape} {
+			.moon {
+				height: 60%;
+			}
+
+			.galaxy {
+				height: 75%;
+			}
+
+			.earth {
+				height: 40%;
+			}
+
+			.message {
+				top: calc( 55% + 35px );
+			}
+		}
+	}
+}

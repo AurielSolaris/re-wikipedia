@@ -1,0 +1,11 @@
+.unofficial-notice {
+	padding: var( --w-sp-2 ) var( --w-sp-3 );
+	color: var( --w-fg-muted );
+	font-size: var( --w-fs-small );
+	line-height: var( --w-lh-body );
+	text-align: center;
+
+	p {
+		margin: 0;
+	}
+}

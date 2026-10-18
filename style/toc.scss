@@ -1,0 +1,20 @@
+.toc {
+	.list {
+		top: $pageHeaderHeight;
+		bottom: 0;
+
+		.item .info .title {
+			font-size: 17px;
+
+			.subheader2 {
+				color: var( --w-fg-muted );
+				padding-left: 15px;
+			}
+
+			.subheader3 {
+				color: var( --w-fg-muted );
+				padding-left: 30px;
+			}
+		}
+	}
+}

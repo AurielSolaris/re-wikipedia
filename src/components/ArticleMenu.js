@@ -2,7 +2,8 @@ import { h } from 'preact'
 import { useRef, useEffect } from 'preact/hooks'
 import { useNavigation, useI18n, useSoftkey, usePopup } from 'hooks'
 import { articleHistory, goto } from 'utils'
-import { ListView, TextSize } from 'components'
+import { ListView } from './ListView'
+import { TextSize } from './TextSize'
 
 export const ArticleMenu = ({
   close, onTocSelected, onLanguageSelected,

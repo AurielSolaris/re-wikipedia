@@ -1,0 +1,46 @@
+.table {
+	overflow-x: hidden;
+	overflow-y: scroll;
+	overflow: -moz-scrollbars-none;
+	height: 100%;
+	font-size: 12px;
+	color: var( --w-fg );
+
+	table {
+		border-collapse: collapse;
+		border-style: hidden;
+		width: 100%;
+
+		caption {
+			color: var( --w-fg );
+			background-color: var( --w-canvas-subtle );
+			padding: 6px 10px;
+
+			b,
+			span {
+				display: inline-block;
+			}
+		}
+
+		tr:first-child {
+			font-weight: bold;
+			background-color: var( --w-accent-subtle );
+		}
+
+		a {
+			color: var( --w-fg );
+			text-decoration: none;
+		}
+
+		th,
+		td {
+			border: 0.8px solid var( --w-border );
+			padding: 7px;
+			text-align: center;
+		}
+
+		.hidden-in-table {
+			display: none;
+		}
+	}
+}

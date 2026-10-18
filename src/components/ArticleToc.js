@@ -1,7 +1,7 @@
 import { h } from 'preact'
 import { useRef, useLayoutEffect } from 'preact/hooks'
 import { useNavigation, useI18n, useSoftkey } from 'hooks'
-import { ListView } from 'components'
+import { ListView } from './ListView'
 
 export const ArticleToc = ({ items, currentAnchor, onSelectItem, close, closeAll }) => {
   const containerRef = useRef()

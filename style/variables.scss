@@ -1,0 +1,17 @@
+
+// This is the top bar with clock, battery status, etc
+$headerHeight: 26px;
+// This is the app top bar with page header title
+$pageHeaderHeight: 28px;
+// This is the bottom bar with softkeys labels
+$softkeysHeight: 30px;
+
+$availableHeight: calc(100vh - #{$softkeysHeight});
+
+$colorLight: var( --w-fg-subtle );
+
+$smallFont: 12px;
+$bigFont: 17px;
+
+// Landscape size is 320x240, this supports Jio2 devices
+$landscape: "(min-width: 250px)";

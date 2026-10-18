@@ -1,5 +1,5 @@
 import { h } from 'preact'
-import { Loading } from 'components'
+import { Loading } from './Loading'
 import { useSoftkey, useI18n } from 'hooks'
 import { goto } from 'utils'
 

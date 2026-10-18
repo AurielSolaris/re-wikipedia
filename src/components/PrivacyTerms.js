@@ -1,7 +1,7 @@
 import { h } from 'preact'
 import { useRef, useEffect } from 'preact/hooks'
 import { useNavigation, useI18n, useSoftkey } from 'hooks'
-import { ListView } from 'components'
+import { ListView } from './ListView'
 import { goto } from 'utils'
 
 export const PrivacyTerms = ({ close }) => {

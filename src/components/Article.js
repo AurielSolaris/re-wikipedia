@@ -1,11 +1,16 @@
 import { h, Fragment } from 'preact'
 import { memo } from 'preact/compat'
 import { useState, useRef, useEffect, useLayoutEffect, useContext } from 'preact/hooks'
-import {
-  ReferencePreview, ArticleToc, ArticleLanguage,
-  ArticleMenu, ArticleFooter, ArticleLoading, QuickFacts,
-  Error, Gallery, Table
-} from 'components'
+import { ReferencePreview } from './ReferencePreview'
+import { ArticleToc } from './ArticleToc'
+import { ArticleLanguage } from './ArticleLanguage'
+import { ArticleMenu } from './ArticleMenu'
+import { ArticleFooter } from './ArticleFooter'
+import { ArticleLoading } from './ArticleLoading'
+import { QuickFacts } from './QuickFacts'
+import { Error } from './Error'
+import { Gallery } from './Gallery'
+import { Table } from './Table'
 import {
   useArticle, useI18n, useSoftkey,
   useArticlePagination, useArticleLinksNavigation,

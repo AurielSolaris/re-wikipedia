@@ -1,6 +1,6 @@
 import { h } from 'preact'
 import { memo } from 'preact/compat'
-import { Loading } from 'components'
+import { Loading } from './Loading'
 import { useI18n } from 'hooks'
 
 export const SearchLoading = memo(() => {

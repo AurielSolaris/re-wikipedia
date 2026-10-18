@@ -33,3 +33,13 @@ export const buildPcsUrl = (lang, title, endpoint) => {
   const page = encodeURIComponent(canonicalizeTitle(title))
   return `${base}/${path}/${page}`
 }
+
+// Current, CORS-enabled Wikimedia Core REST API (api.wikimedia.org). Used as a
+// fallback for article HTML when the legacy PCS `mobile-html` endpoint is
+// unavailable, and for other v1 reads.
+export const buildCoreRestUrl = (lang, title, endpoint = 'html') => {
+  const base = `https://api.wikimedia.org/core/v1/wikipedia/${lang}`
+  const page = encodeURIComponent(canonicalizeTitle(title))
+  return `${base}/page/${page}/${endpoint}`
+}
+

@@ -2,7 +2,8 @@ import { h } from 'preact'
 import { useRef, useEffect } from 'preact/hooks'
 import { memo } from 'preact/compat'
 import { useNavigation, useI18n, useSoftkey, usePopup, useOnlineStatus, useScroll } from 'hooks'
-import { ListView, goToRandomArticle } from 'components'
+import { ListView } from './ListView'
+import { goToRandomArticle } from './Search'
 import { goto, articleHistory } from 'utils'
 
 export const Tips = () => {

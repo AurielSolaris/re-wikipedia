@@ -1,0 +1,101 @@
+.gallery-view {
+	width: 100%;
+	height: $availableHeight;
+	background-color: #000; // photo lightbox stays dark in both themes
+
+	.img {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-direction: column;
+
+		img {
+			background-color: var( --w-canvas );
+			object-fit: contain;
+		}
+	}
+
+	.arrow {
+		position: absolute;
+		top: calc( 50% - 10px );
+		width: 28px;
+		height: 28px;
+
+		&.left {
+			left: 8px;
+			transform: scaleX( -1 );
+		}
+
+		&.right {
+			right: 8px;
+		}
+	}
+
+	&.portrait {
+		.img {
+			height: $availableHeight; // Required under portrait for black background to work on device
+			img {
+				height: 100%;
+				width: auto;
+			}
+		}
+	}
+
+	&.landscape {
+		.img {
+			height: $availableHeight; // Required under landscape for black background to work on device
+			img {
+				max-width: 100%;
+			}
+		}
+	}
+}
+
+.gallery-about {
+	.header {
+		font-size: var( --w-fs-h2 );
+		color: var( --w-fg );
+		background-color: var( --w-canvas-subtle );
+		padding: 3px 10px;
+		text-align: center;
+	}
+
+	.sub-header {
+		font-size: 14px;
+		color: var( --w-fg );
+		background-color: var( --w-canvas-subtle );
+		padding: 3px 10px;
+	}
+
+	p {
+		font-size: var( --w-fs-small );
+		color: var( --w-fg );
+		margin: 10px;
+		overflow: hidden;
+		line-height: 15px;
+
+		&.description {
+			@include clampMixin( 45px );
+		}
+	}
+
+	&.loading {
+		.preview-text {
+			padding: 11px 10px;
+		}
+
+		.loading-block {
+			background-color: var( --w-canvas-subtle );
+			border-radius: var( --w-r-sm );
+
+			&.full {
+				width: 100%;
+				height: 11px;
+
+				&.last {
+					margin-top: 6px;
+				}
+			}
+		}
+	}
+}

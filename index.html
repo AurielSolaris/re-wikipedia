@@ -4,14 +4,84 @@
     <meta charset="utf-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <meta name="theme-color" content="rgb(51, 102, 204)" />
-    <title>Wikipedia</title>
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)" />
+
+    <title>Wikipedia (unofficial, lightweight web reader)</title>
+    <meta
+      name="description"
+      content="An unofficial, lightweight web reader for Wikipedia — a fast, small rewrite inspired by the KaiOS Wikipedia app. Search and read articles in 6 languages. Not affiliated with or endorsed by the Wikimedia Foundation."
+    />
+    <meta
+      name="keywords"
+      content="wikipedia, reader, lightweight, kaios, unofficial, encyclopedia, offline, web app"
+    />
+    <meta name="author" content="wiki-unofficial" />
+    <meta name="robots" content="index, follow" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <link rel="canonical" href="https://wiki-unofficial.vercel.app/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Wikipedia (unofficial)" />
+    <meta property="og:title" content="Wikipedia (unofficial, lightweight web reader)" />
+    <meta
+      property="og:description"
+      content="An unofficial, lightweight web reader for Wikipedia — a fast, small rewrite inspired by the KaiOS Wikipedia app. Not affiliated with the Wikimedia Foundation."
+    />
+    <meta property="og:url" content="https://wiki-unofficial.vercel.app/" />
+    <meta property="og:image" content="https://wiki-unofficial.vercel.app/images/112px.png" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Wikipedia (unofficial, lightweight web reader)" />
+    <meta
+      name="twitter:description"
+      content="An unofficial, lightweight web reader for Wikipedia. Not affiliated with the Wikimedia Foundation."
+    />
+    <meta name="twitter:image" content="https://wiki-unofficial.vercel.app/images/112px.png" />
+
+    <!-- iOS / Apple -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Wikipedia" />
+    <link rel="apple-touch-icon" href="/images/112px.png" />
+    <link rel="icon" type="image/png" sizes="56x56" href="/images/56px.png" />
+    <link rel="icon" type="image/png" sizes="112x112" href="/images/112px.png" />
+
+    <!-- Faster first article fetch on the web deployment -->
+    <link rel="preconnect" href="https://en.wikipedia.org" crossorigin />
+    <link rel="preconnect" href="https://api.wikimedia.org" crossorigin />
+    <link rel="dns-prefetch" href="https://upload.wikimedia.org" />
+
+    <!-- Structured data: describes an unofficial reader, not a Wikimedia property -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Wikipedia (unofficial, lightweight web reader)",
+        "url": "https://wiki-unofficial.vercel.app/",
+        "applicationCategory": "ReferenceApplication",
+        "operatingSystem": "Web, KaiOS",
+        "browserRequirements": "Requires JavaScript",
+        "inLanguage": ["en", "hi", "bn", "he", "ru", "ja"],
+        "isAccessibleForFree": true,
+        "disclaimer": "Unofficial project. Not affiliated with or endorsed by the Wikimedia Foundation. Wikipedia content is available under CC BY-SA."
+      }
+    </script>
   </head>
 
   <body>
     <div class="root"></div>
-    <script src="dist/main.js"></script>
+    <noscript>
+      This app needs JavaScript to load Wikipedia articles. Please enable
+      JavaScript, or read Wikipedia directly at
+      <a href="https://www.wikipedia.org">wikipedia.org</a>.
+    </noscript>
+    <script type="module" src="/src/index.js"></script>
   </body>
 </html>

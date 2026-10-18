@@ -121,5 +121,6 @@
 	"softkey-yes": "Да",
 	"softkey-no": "Нет",
 	"settings-privacy-terms": "Конфиденциальность и условия",
-	"privacy-terms-header": "Конфиденциальность и условия"
+	"privacy-terms-header": "Конфиденциальность и условия",
+	"settings-touch-support": "Сенсорный ввод"
 }

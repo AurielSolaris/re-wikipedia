@@ -1,7 +1,13 @@
-import { buildPcsUrl, cachedFetch } from 'utils'
+import { buildMwApiUrl, cachedFetch } from 'utils'
 
 export const getRandomArticleTitle = lang => {
-  const url = buildPcsUrl(lang, 'title', 'random')
+  const params = {
+    action: 'query',
+    list: 'random',
+    rnnamespace: 0,
+    rnlimit: 1
+  }
+  const url = buildMwApiUrl(lang, params)
 
-  return cachedFetch(url, data => data.items[0].title, false)
+  return cachedFetch(url, data => data.query.random[0].title, false)
 }

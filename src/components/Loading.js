@@ -1,13 +1,11 @@
 import { h } from 'preact'
 import { memo } from 'preact/compat'
+import { ReactIsland } from './ReactIsland'
+import { make as ResLoading } from '../res/Loading.res.mjs'
 
-export const Loading = memo(({ message }) => {
-  return (
-    <div class='loading-planet'>
-      <img class='moon' src='images/loading-moon.svg' />
-      <img class='earth' src='images/loading-earth.svg' />
-      <img class='galaxy' src='images/loading-galaxy.svg' />
-      <p class='message'>{message}</p>
-    </div>
-  )
-})
+// ReScript + React implementation lives in src/res/Loading.res; it is mounted
+// here through the Preact <-> React island bridge during the incremental
+// Preact -> React migration.
+export const Loading = memo(({ message }) => (
+  <ReactIsland component={ResLoading} props={{ message: message || '' }} />
+))

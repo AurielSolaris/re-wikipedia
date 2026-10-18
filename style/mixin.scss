@@ -1,0 +1,25 @@
+@mixin clampMixin($maxHeight) {
+	&.clamp {
+		max-height: $maxHeight;
+		overflow: hidden;
+		position: relative;
+
+		&:before {
+			content: '...';
+			position: absolute;
+			right: 0;
+			bottom: 0;
+			background: var( --w-canvas );
+		}
+
+		&:after {
+			content: '';
+			position: absolute;
+			right: 1em;
+			width: 1em;
+			height: 1em;
+			margin-top: 0.2em;
+			background: var( --w-canvas );
+		}
+	}
+}

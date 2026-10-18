@@ -1,0 +1,14 @@
+.reference-preview {
+	padding: 10px;
+
+	.ref-title {
+		text-transform: uppercase;
+		border-bottom: var( --w-border ) solid 1px;
+		padding-bottom: 5px;
+		color: var( --w-fg-muted );
+	}
+
+	.ref-content {
+		padding-top: 5px;
+	}
+}

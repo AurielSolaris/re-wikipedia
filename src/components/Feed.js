@@ -1,7 +1,7 @@
 import { h } from 'preact'
 import { useEffect, useState } from 'preact/hooks'
 import { memo } from 'preact/compat'
-import { ListView } from 'components'
+import { ListView } from './ListView'
 import { useI18n } from 'hooks'
 import { getTrendingArticles } from 'api'
 import { getUserCountry } from 'utils'

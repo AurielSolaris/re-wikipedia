@@ -6,7 +6,7 @@ import {
   useOnlineStatus, useConfirmDialog
 } from 'hooks'
 import { sendFeedback, openExternal } from 'utils'
-import { OfflinePanel } from 'components'
+import { OfflinePanel } from './OfflinePanel'
 
 export const Feedback = ({ close }) => {
   const containerRef = useRef()

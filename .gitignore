@@ -1,8 +1,14 @@
 dist/
 node_modules/
+lib/
+.vercel
+*.res.mjs
+*.res.js
+*.res.cjs
 cypress/screenshots
 cypress/videos/
 .vscode
 Wikipedia
 WikipediaKaiOS*.zip
 gh-pages
+.env*

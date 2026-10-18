@@ -1,0 +1,523 @@
+===============================================================================
+ WIKIPEDIA for KaiOS - FILE MAP
+ A guide to every file in the repository: what it does and how it connects.
+===============================================================================
+
+STACK
+  Preact 10 (h / render / hooks) + preact-router + history, being migrated
+  incrementally to ReScript 12 + React 19 (mounted via React islands).
+  Bun (package manager + runtime) + Vite 8 (rolldown) for building; SCSS for
+  styles (converted from LESS). @vitejs/plugin-legacy emits a Firefox 37
+  (KaiOS) bundle alongside the modern web bundle. banana-i18n + banana-checker
+  for i18n. Cypress was removed; there is no e2e suite.
+  Deploys: KaiOS packages (zip) AND the web app on Vercel (wiki-unofficial).
+  Module aliases (vite.config.mjs): components, hooks, api, contexts, reducers,
+  utils, i18n resolve to ./src/* (i18n -> ./i18n).
+
+HIGH-LEVEL FLOW
+  index.html -> dist/index.html + hashed dist/assets/* (built from src/index.js)
+  src/index.js  -> sets language, builds Banana i18n, renders <App/> (imports
+                   style/style.scss)
+  App.js        -> provides contexts, renders <Routes/> + <Softkey/> + popups
+  Routes.js     -> lazy-loaded routes (React.lazy + Suspense) per view
+  Views         -> use hooks (data/softkey/navigation) + api + utils
+  api/*         -> fetch Wikipedia REST/Action API through utils/cachedFetch
+  Popups        -> any component can be shown via usePopup + PopupContainer
+  ReScript      -> src/res/*.res compiles to in-source *.res.mjs and is mounted
+                   into the Preact tree via components/ReactIsland.js
+
+===============================================================================
+ ROOT FILES
+===============================================================================
+
+index.html
+  Vite entry + app shell. Holds SEO/meta (description, Open Graph, Twitter,
+  canonical, theme-color light/dark, JSON-LD), Apple meta (web-app-capable,
+  safe-area via viewport-fit=cover), font/API preconnects, <div class="root">
+  and <script type="module" src="/src/index.js">. Entry page declared in
+  manifest.webapp (launch_path).
+
+robots.txt, sitemap.xml
+  Crawler files for the web deployment, copied into dist/ by vite.config.mjs.
+
+sim.html
+  Standalone KaiOS device simulator page. Hosts index.html in an <iframe>,
+  draws a phone keypad, and dispatches synthetic keydown events (SoftLeft,
+  ArrowUp, Enter, EndCall, Backspace, character keys) into the app frame.
+  Publishes a static build to gh-pages (see scripts/sim.sh).
+
+manifest.webapp
+  Firefox OS / KaiOS privileged app manifest. Declares name, icon, launch
+  path, CSP, permissions (systemXHR for CORS bypass), and locales. The
+  "locales" object is generated at build time by scripts/manifest.js and its
+  version is injected into the bundle via Vite `define` (APP_VERSION).
+
+manifest (generated) -> scripts/manifest.js reads i18n/*.json + package.json
+  and emits a full manifest for a given TARGET_STORE (kai or jio).
+
+vite.config.mjs
+  Build config. Entry ./src/index.js -> dist/assets/*. Preact preset (JSX in
+  .js via Babel), @vitejs/plugin-legacy (Firefox >= 37), SCSS, aliases above,
+  rolldown codeSplitting (vendor-preact / vendor-i18n / vendor-react), a
+  copyStatic plugin (images/, manifest.webapp, robots.txt, sitemap.xml) and
+  `define` globals: APP_VERSION, CIRCLE_SHA1, INSTRUMENTATION, RANDOM,
+  TARGET_STORE, DISABLE_REQUEST_HEADER (consumed by src/utils/*).
+
+rescript.json
+  ReScript 12 config: sources in src/res, esmodule + in-source output with a
+  .res.mjs suffix, JSX v4, depends on @rescript/react.
+
+vercel.json
+  Web deployment: bun install/build, output dist, VITE_BASE=/ and
+  DISABLE_REQUEST_HEADER=1, security + asset cache headers, and an SPA rewrite
+  that leaves robots.txt / sitemap.xml / manifest.webapp / assets / images
+  untouched.
+
+package.json
+  Scripts: build / build:ci (rescript build + vite build), dev, preview,
+  start, res:build, res:watch, lint:styles, stats (cloc), banana, deploy,
+  adb/b2g. Deps: preact (10.29), banana-i18n; dev: vite, sass,
+  @preact/preset-vite, @vitejs/plugin-legacy, rescript, @rescript/react,
+  react/react-dom. (Cypress removed.)
+
+.eslintrc.js / .stylelintrc.json
+  Lint rules for JS (+ SCSS stylelint config). Cypress plugin removed.
+
+.circleci/config.yml
+  CI: install, build:ci, banana (i18n check), zip for kai + jio stores.
+  (Cypress/e2e and the browser-tools orb were removed.)
+
+pull_request_template.md, README.md, LICENSE
+  Contribution template, project docs, MIT license. img_wikipedia.jpg is the
+  marketing/store image.
+
+===============================================================================
+ scripts/  (build + release tooling, Node/Bash)
+===============================================================================
+
+scripts/manifest.js
+  Generates manifest.webapp: merges i18n message "app-title/subtitle/
+  description" into KaiOS + Jio locale entries, sets version from
+  package.json, appends ".0" for TARGET_STORE=jio. Output piped to a file.
+
+scripts/zip.sh <kai|jio>
+  Packages the app: regenerates manifest for the target store, builds with
+  INSTRUMENTATION=1, copies main.js/images/index.html into Wikipedia/, zips to
+  WikipediaKaiOS<target>.zip.
+
+scripts/sim.sh
+  Builds a simulator bundle (INSTRUMENTATION=0, DISABLE_REQUEST_HEADER=1),
+  assembles gh-pages/ (dist, images, index.html, sim.html, .circleci,
+  .nojekyll).
+
+scripts/stats.sh / stats_header.sh / stats_line.sh
+  Dev helper: repeatedly prints device memory (USS/PSS from `adb shell
+  b2g-info`) for the Wikipedia process to profile performance on device.
+
+===============================================================================
+ src/  - APPLICATION SOURCE
+===============================================================================
+
+src/index.js  (entry point)
+  Reads device language (utils/languages), initializes Banana i18n with the app
+  language, loads all i18n messages + consent messages, computes text direction,
+  and renders <App i18n={banana} dir={dir}> into .root. Connects: utils,
+  components/App, style/style.less.
+
+------------------------------------------------------------------------------
+ src/reducers/  - softkey state machine
+------------------------------------------------------------------------------
+
+SoftkeyReducer.js
+  Reducer for the softkey (bottom bar) state: { stack, current }. Actions:
+  set / replace / push / pop, keyed by an "origin" string and a counter so
+  overlapping components register/unregister cleanly. Consumed by App.js via
+  useReducer and driven by the useSoftkey hook.
+
+index.js
+  Re-exports SoftkeyReducer. (`import { SoftkeyReducer } from 'reducers'`)
+
+------------------------------------------------------------------------------
+ src/contexts/  - Preact contexts (all one-liners: createContext)
+------------------------------------------------------------------------------
+
+I18nContext.js   Holds the Banana i18n instance. Provided by App; consumed by
+                 useI18n.
+SoftkeyContext.js Holds { state, dispatch } for softkeys. Provided by App;
+                 consumed by useSoftkey.
+PopupContext.js  Holds { popupState, setPopupState }. Provided by App;
+                 consumed by usePopup.
+DirectionContext.js Holds { dirState, setDirState } (ltr/rtl). Provided by App;
+                 consumed by Language and TextSize.
+FontContext.js   Holds { textSize, setTextSize }. Provided by App; consumed by
+                 Article and TextSize.
+index.js         Re-exports all contexts.
+
+------------------------------------------------------------------------------
+ src/hooks/  - reusable Preact hooks
+------------------------------------------------------------------------------
+
+useSoftkey.js
+  Registers a softkey "origin" on mount (push) and removes it on unmount (pop),
+  dispatching the component's key config into SoftkeyContext. Core of key
+  handling. Uses contexts/SoftkeyContext.
+
+useI18n.js
+  Returns a translate function bound to the I18nContext Banana instance,
+  falling back to English then to the raw key. Uses contexts/I18nContext,
+  utils/getAppLanguage, utils/sendErrorLog.
+
+usePopup.js
+  Returns [show, close] backed by PopupContext. show(component, props) pushes a
+  popup (optionally stacked); close pops the last one. Central to all overlays.
+
+useNavigation.js
+  Keyboard navigation over [data-selectable] elements (up/down or left/right).
+  Tracks the selected element via nav-selected/nav-index attributes, scrolls it
+  into view, and wires arrow keys through useSoftkey.
+
+useRange.js
+  Small bounded counter hook [value, prev, next, set] used by Gallery,
+  AboutWikipedia, ArticlePagination.
+
+useScroll.js
+  Returns [scrollDown, scrollUp, position] that mutate a ref element's
+  scrollTop/scrollLeft. Used by Consent, Table, Feedback, Tips, QuickFacts.
+
+useHistoryState.js
+  useState-like state persisted in window.history.state (survives back/forward).
+  Used by Search to keep the search box text.
+
+useOnlineStatus.js
+  Tracks navigator.onLine via online/offline events, with optional change
+  callback. Used by Search, Tips, Feedback, OfflineIndicator.
+
+useErrorLogging.js
+  In production, wires Preact's useErrorBoundary to utils/sendErrorLog. Called
+  by App.
+
+useTracking.js
+  InukaPageView instrumentation: session/user IDs, visibility timing, section
+  read counts; sends events via utils/sendEvent. Called by Search (pageViews)
+  and Article.
+
+useArticlePreviewTracking.js
+  Logs a VirtualPageView legacy event after a preview is shown >= 1s. Uses
+  utils/sendLegacyEvent, isInstrumentationEnabled. Called by ArticlePreview.
+
+useArticle.js
+  Loads a full article: fires getArticle, getArticleSummary, getArticleMediaList,
+  getSuggestedArticles, getLanglinks in parallel, merges results, appends the
+  footer section, and exposes [article, reload]. Depends on api/* and utils.
+  Consumed by components/Article.
+
+useArticleSummary.js
+  Loads just the summary (api/getArticleSummary) for previews.
+
+useArticleMediaInfo.js
+  Loads file/license/author metadata for one media item
+  (api/getArticleMediaInfo). Used by Gallery.
+
+useArticlePagination.js
+  Horizontal paging logic for Article sections: arrow keys change page then
+  section; handles anchors and the skip-intro anchor. Uses useSoftkey, useRange,
+  utils/viewport, utils/skipArticleIntro. Used by Article.
+
+useArticleLinksNavigation.js
+  Finds and navigates interactive links inside rendered article HTML
+  (links, references, images, tables, figures), highlights the current link,
+  and routes center-key presses to handlers. Uses useSoftkey, usePopup,
+  ArticlePreview, utils. Used by Article, QuickFacts, ReferencePreview.
+
+useSearch.js
+  Debounce-free search state: runs api/search on query changes, exposes
+  [setQuery, results, loading]. Used by Search.
+
+useSearchLanguage.js
+  Filters utils/languages list for the in-app language picker. Used by Language.
+
+useSearchArticleLanguage.js
+  Loads available languages for an article via api/getLanglinks and supports
+  filtering. Used by ArticleLanguage.
+
+useConfirmDialog.js
+  Wraps usePopup(ConfirmDialog) into a showConfirmDialog({...}) helper.
+  Used by Article, Feedback, Search, QuickFacts, EndCallHandler.
+
+useTracking.js (see above), useHistoryState.js (see above).
+
+index.js
+  Re-exports every hook.
+
+------------------------------------------------------------------------------
+ src/api/  - data fetching (all go through utils/cachedFetch)
+------------------------------------------------------------------------------
+
+getArticle.js
+  Fetches the mobile-html article, parses sections, table of contents,
+  infobox, and references, and rewrites image URLs. Uses utils/cachedFetch,
+  buildPcsUrl, canonicalizeTitle. Used by useArticle.
+
+getArticleSummary.js
+  REST summary endpoint: title, thumbnail, extract. Used by useArticle and
+  useArticleSummary.
+
+getArticleMediaList.js
+  REST media-list: gallery-worthy images. Used by useArticle.
+
+getArticleMediaInfo.js
+  Action API imageinfo (author, license, description, file page). Uses
+  utils/buildMwApiUrl, viewport. Used by useArticleMediaInfo.
+
+getSuggestedArticles.js
+  Action API morelike: search-based related articles. Used by useArticle.
+
+getLanglinks.js
+  Action API langlinks: other-language versions, filtered by support and sorted
+  by priority. Uses utils/languages helpers. Used by useArticle and
+  useSearchArticleLanguage.
+
+getRandomArticleTitle.js
+  REST random endpoint. Used by components/Search (random feature).
+
+getTrendingArticles.js
+  Reads a JSON wiki page on mediawiki.org with per-country trending titles.
+  Uses utils/buildMwOrgApiUrl, sendErrorLog. Used by Feed.
+
+search.js
+  Action API full-text search with thumbnails. Used by useSearch.
+
+index.js
+  Re-exports every api function.
+
+------------------------------------------------------------------------------
+ src/utils/  - helpers, constants, side-effectful services
+------------------------------------------------------------------------------
+
+mwApi.js
+  URL builders: buildMwApiUrl (lang.wikipedia.org action API), buildMwOrgApiUrl
+  (mediawiki.org), buildPcsUrl (REST page/ endpoints), buildWpMobileWebUrl.
+  Used by nearly every api/*.
+
+cachedFetch.js
+  XMLHttpRequest wrapper returning [promise, abort]; caches responses by URL,
+  sets User-Agent/Referer and custom headers, and reads the GeoIP response
+  header to set user country. Uses utils (isProd, appVersion, sendErrorLog,
+  isRequestHeaderDisabled, setUserCountry). Used by all api/*.
+
+featureFlags.js
+  Exposes webpack DefinePlugin globals: isInstrumentationEnabled (INSTRUMENTATION),
+  isRandomEnabled (RANDOM), prioritizedLanguageListName (TARGET_STORE),
+  isRequestHeaderDisabled (DISABLE_REQUEST_HEADER). Used by tracking, Search,
+  cachedFetch, languages.
+
+mode.js            isProd() = NODE_ENV === 'production'.
+appVersion.js      Returns injected APP_VERSION global.
+gitHash.js         Returns injected CIRCLE_SHA1 global.
+
+appInstallId.js    Persistent random install id in localStorage
+                   (generateRandomId). Used by tracking + AboutApp.
+generateRandomId.js Crypto-based random hex id.
+
+languages.js       The language database + i18n plumbing: prioritized/all
+                   language lists, isPrioritized, isSupportedForReading,
+                   getDirection (rtl list), loadAllLanguagesMessages (requires
+                   ../../i18n/<lang>.json), set/getAppLanguage,
+                   set/getDeviceLanguage, checkHasDeviceLanguageChanged.
+                   Used by index.js, goto, getLanglinks, Language, useI18n.
+consent.js         Consent gate: isConsentGranted, grantConsent (sends
+                   KaiOSAppFirstRun event), and consentMessages (english +
+                   translations for the legal consent text). Used by index.js,
+                   Consent, Search, useTracking.
+interwikiKeys.js   INTERWIKI_KEYS list to detect interwiki links as external.
+                   Used by useArticleLinksNavigation.
+skipArticleIntro.js skipIntroAnchor ('wpSkipIntro') + isAnchorIntroSkip, used
+                   by Article pagination and Search random article.
+
+openExternal.js    Opens a URL via MozActivity (device) or window.open.
+                   Used by useArticleLinksNavigation, goto, Feedback, Settings,
+                   Gallery, AboutApp.
+goto.js            Navigation helpers: article/search/settings/tips route(),
+                   termsOfUse + privacyPolicy (openExternal), back(). Used by
+                   almost every view.
+
+onboarding.js      localStorage flag for whether onboarding was completed.
+articleHistory.js  In-memory (max 100) article back-stack: add/prev/getPrev/
+                   hasPrev/clear. Used by Article, ArticleMenu, Search, Tips.
+articleTextSize.js Font-size preference (get/set, MIN/MAX) in localStorage.
+                   Used by App, TextSize.
+
+canonicalizeTitle.js  spaces -> underscores.
+normalizeTitle.js     underscores -> spaces.
+fixImgSrc.js          Fixes protocol-relative / extension image paths.
+viewport.js           { width, height } of window.
+
+userCountry.js     Stores/reads the GeoIP country in localStorage
+                   (setUserCountry/getUserCountry). Written by cachedFetch,
+                   read by Feed.
+sendEvent.js       Sends an analytics event via navigator.sendBeacon to the
+                   Wikimedia EventGate intake. Used by tracking/consent/feedback.
+sendLegacyEvent.js Sends a legacy beacon event to en.wikipedia beacon endpoint.
+sendErrorLog.js    Sends a structured error to the logging intake (with version
+                   + git hash). Used by useI18n, cachedFetch, getTrending,
+                   useErrorLogging.
+sendFeedback.js    Wraps sendEvent for user feedback submissions.
+
+index.js           Re-exports every util module.
+
+------------------------------------------------------------------------------
+ src/components/  - UI (Preact components)
+------------------------------------------------------------------------------
+
+App.js
+  Root component. Creates the softkey reducer, popup state, direction state and
+  text-size state, wraps everything in the five Context providers, and renders
+  <OfflineIndicator/>, <Routes/>, <Softkey/> and <PopupContainer/>. Uses
+  contexts, reducers, hooks/useErrorLogging, components, utils/articleTextSize.
+
+Routes.js
+  preact-router hash routes: /onboarding, / (Search), /settings, /tips,
+  /article/:lang/:title/:anchor?, /language. Redirects to /onboarding until
+  onboarding is done. Uses utils/onboarding. Mounted by App.
+
+Softkey.js
+  Renders the three softkey labels and translates physical keydown events
+  (SoftLeft/Enter/SoftRight/arrows/Backspace/EndCall) to the handlers supplied
+  by the active view. Swaps left/right for RTL. Driven by App's softkey state.
+
+PopupContainer.js
+  Renders the popup stack with z-index layering and a shader, honoring the
+  'fullscreen' and 'hideOthers' options. Driven by App's popup state + usePopup.
+
+--- Views (route targets) ---
+Search.js          Home/search view: input + results list, offline panel, consent
+                   popup, random article, tracking. Uses components/ListView,
+                   OfflinePanel, Consent, SearchLoading; many hooks; utils;
+                   api/getRandomArticleTitle. Also exports goToRandomArticle
+                   (used by Tips).
+Article.js         Article reader: fetches article, renders one section at a
+                   time with pagination, link navigation, actions (TOC, gallery,
+                   languages, share), popups (TOC, language, menu, quickfacts,
+                   gallery, reference, table), history + tracking. Uses many
+                   components/hooks/utils. The hub for sub-components below.
+Settings.js        Settings list -> Language route, Feedback, AboutWikipedia,
+                   AboutApp, PrivacyTerms popups. Uses ListView + usePopup.
+Tips.js            Tips list + Read/Search/Switch/About tip popups; "try"
+                   actions call goToRandomArticle / goto.search.
+Language.js        App-language picker with search + radio list; applies the
+                   chosen language and updates direction. Uses DirectionContext,
+                   RadioListView, utils/languages.
+Onboarding.js      First-run screen; marks onboarding done and goes to search.
+
+--- Article sub-components / popups ---
+ArticleFooter.js   "Read more" suggested articles + license + view-in-browser
+                   link, appended as the last article section.
+ArticleLanguage.js Article-language picker popup; uses useSearchArticleLanguage
+                   and goto.article to switch language.
+ArticleLoading.js  Article-specific loading wrapper around Loading.
+ArticleMenu.js     Article options menu popup (search, previous, sections,
+                   text size, quick facts, gallery, languages, share). Uses
+                   TextSize popup + articleHistory.
+ArticlePreview.js  Link-hover preview popup showing summary; "read" opens the
+                   article; logs preview tracking.
+ArticleToc.js      Table-of-contents popup built from article toc.
+QuickFacts.js      Infobox popup (renders article.infobox) with link navigation
+                   + reference/gallery/table handling.
+ReferencePreview.js Reference footnote popup with link navigation.
+Gallery.js         Fullscreen image gallery with about/metadata sub-popup;
+                   uses useArticleMediaInfo + useRange.
+Table.js           Fullscreen scrollable table popup.
+
+--- Shared / small UI ---
+AboutApp.js        About-this-app popup (version, install id, foundation link).
+AboutWikipedia.js  Multi-page About-Wikipedia popup (reuses onboarding images).
+ConfirmDialog.js   Generic two-choice confirm popup (used via useConfirmDialog).
+Consent.js         First-run privacy/terms consent popup (grantConsent).
+Error.js           Error screen with refresh action (used by Article + Feed).
+Feed.js            Trending-articles list for a user's country (api/
+                   getTrendingArticles, utils/getUserCountry); has its own
+                   loading + error states.
+Feedback.js        Feedback form popup with online/offline handling, sends via
+                   utils/sendFeedback, success popup, links to policy/terms.
+ListView.js        Generic selectable list (dangerouslySetInnerHTML titles/
+                   descriptions, optional thumbnails/link icon). Reused widely.
+RadioListView.js   List with radio selection indicator. Used by Language.
+Loading.js         Animated planet loading screen + message. Base for other
+                   loaders.
+OfflineIndicator.jsTop banner shown briefly when connectivity drops.
+OfflinePanel.js    Full offline placeholder (used by Search + Feedback).
+PrivacyTerms.js    Privacy/Terms list popup (used by Settings).
+TextSize.js        Text-size slider popup; persists via articleTextSize and
+                   FontContext/DirectionContext.
+EndCallHandler.js  Listens for the EndCall key and shows a close-app confirm.
+Loading.js / SearchLoading.js (SearchLoading wraps Loading with a search msg)
+ConfirmDialog.js (see above).
+
+index.js
+  Re-exports every component.
+
+===============================================================================
+ i18n/  - TRANSLATIONS
+===============================================================================
+  One JSON message file per language code (en.json is the source, qqq.json is
+  the message documentation for translators). Generated/managed on Translatewiki.
+  Consumed at runtime by banana-i18n (loaded in src/index.js via
+  utils/languages.loadAllLanguagesMessages) and at build time by
+  scripts/manifest.js for store metadata. Validated by `npm run banana`.
+
+===============================================================================
+ images/  - STATIC ASSETS
+===============================================================================
+  Icons (icon-*.svg, arrow.svg, link.svg, w.svg), app/store icons (56/84/
+  112px.png, img_wikipedia.jpg at root), loading animation SVGs, offline.svg,
+  onboarding illustrations/backgrounds, tip-*.gif animations, wordmark.
+  Referenced directly by component JSX (e.g. `images/icon-sections.svg`) and by
+  LESS.
+
+===============================================================================
+ style/  - LESS STYLES
+===============================================================================
+  style.less is the single entry (imported by src/index.js). It imports:
+    global:    variables, layout, mixin, input, fontsizes
+    components: confirmdialog, links, listview, loading, popup, radiolistview,
+                softkey
+    views:     aboutapp, aboutwikipedia, article, articlelanguage, consent,
+                error, feedback, footer, gallery, language, menu, offline,
+                offlinepanel, onboarding, preview, privacyterms, quickfacts,
+                reference, search, settings, table, textsize, tips, toc
+  Each LESS file styles the component/view of the same name. variables.less and
+  mixin.less provide tokens (.clampMixin) and fontsizes.less drives the
+  font-size-N body classes set by App/TextSize.
+
+===============================================================================
+ cypress/  - END-TO-END TESTS
+===============================================================================
+  integration/*.js   Specs: article-view, onboarding, references-popup, search,
+                     settings, special-cases, tips.
+  page-objects/*.js  Page-object helpers matching views (article-page,
+                     search-page, settings-page, onboarding-page, tips-page,
+                     popup-page, language-settings-page, quick-facts-page,
+                     article-menu-page, about-app-page, about-wikipedia-page).
+  fixtures/*.json    Mock API responses (cat/catt/cattle/helena search).
+  support/commands.js Custom Cypress commands; support/index.js global setup.
+  plugins/index.js    Cypress plugin config.
+  Configured by cypress.json; run via `npm test` / `npm run cypress:open`.
+
+===============================================================================
+ KEY CONNECTION CHAINS (quick reference)
+===============================================================================
+  Language/i18n:  index.js -> utils/languages -> i18n/*.json -> Banana ->
+                  I18nContext -> useI18n -> every component.
+  Softkeys:       component useSoftkey -> SoftkeyContext dispatch -> App
+                  SoftkeyReducer -> App renders <Softkey> -> keydown -> handler.
+  Popups:         component usePopup -> PopupContext -> App renders
+                  <PopupContainer> -> h(component, props).
+  Article data:   Article -> useArticle -> api/get{Article,ArticleSummary,
+                  ArticleMediaList,SuggestedArticles,Langlinks} ->
+                  utils/cachedFetch -> utils/mwApi URLs -> Wikipedia.
+  Navigation:     goto.js -> preact-router route() -> Routes.js -> view.
+  Analytics:      useTracking / useArticlePreviewTracking / consent ->
+                  utils/sendEvent|sendLegacyEvent|sendErrorLog -> sendBeacon.
+  Build:          webpack DefinePlugin globals -> utils/{featureFlags,appVersion,
+                  gitHash,mode}; scripts/manifest.js -> manifest.webapp.
+===============================================================================

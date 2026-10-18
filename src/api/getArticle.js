@@ -1,11 +1,18 @@
 import {
-  cachedFetch, buildPcsUrl, canonicalizeTitle
+  cachedFetch, buildPcsUrl, buildCoreRestUrl, canonicalizeTitle
 } from 'utils'
 
 export const getArticle = (lang, title) => {
-  const url = buildPcsUrl(lang, title, 'mobile-html')
+  const fallbackTitle = canonicalizeTitle(title)
+  // Prefer the legacy PCS `mobile-html` document (the shape this parser was
+  // written against); fall back to the supported Wikimedia Core REST `html`
+  // endpoint so the app keeps working if PCS is retired.
+  const urls = [
+    buildPcsUrl(lang, title, 'mobile-html'),
+    buildCoreRestUrl(lang, title)
+  ]
 
-  return cachedFetch(url, data => {
+  return cachedFetch(urls, data => {
     const parser = new DOMParser()
     const doc = parser.parseFromString(data, 'text/html')
     const toc = []
@@ -19,18 +26,41 @@ export const getArticle = (lang, title) => {
 
     const lead = doc.querySelector('header')
     const section0 = doc.querySelector('section')
+    if (!section0) {
+      return {
+        contentLang: getMeta('content-language', 'http-equiv'),
+        namespace: 0,
+        id: getMeta('mw:pageId'),
+        sections: [],
+        infobox: null,
+        toc: [],
+        references: {},
+        dir: 'ltr'
+      }
+    }
+
     const infoboxNode = section0.querySelector('.infobox')
     const infobox = infoboxNode && modifyHtmlText(infoboxNode.outerHTML, lang)
     const pcsTableContainer = section0.querySelector('.pcs-collapse-table-container')
     pcsTableContainer && pcsTableContainer.remove()
-    const articleTitle = (lead && lead.querySelector('h1').textContent) || doc.title
-    const articleDescription = lead && lead.querySelector('p') && lead.querySelector('p').textContent
+
+    const h1 = lead && lead.querySelector('h1')
+    const leadParagraph = lead && lead.querySelector('p')
+    const firstImage = section0.querySelector('img')
+    const articleTitle = (h1 && h1.textContent) || doc.title || fallbackTitle
+    const articleDescription =
+      (leadParagraph && leadParagraph.textContent) ||
+      getMeta('description') ||
+      undefined
+    const leadImage = getMeta('mw:leadImage') ||
+      (firstImage && firstImage.getAttribute('src'))
+
     sections.push({
-      imageUrl: getMeta('mw:leadImage'),
+      imageUrl: leadImage && fixImageUrl(leadImage, lang),
       title: articleTitle,
       anchor: canonicalizeTitle(articleTitle),
       description: articleDescription,
-      content: modifyHtmlText(section0.outerHTML)
+      content: modifyHtmlText(section0.outerHTML, lang)
     })
 
     toc.push({
@@ -45,12 +75,15 @@ export const getArticle = (lang, title) => {
         return
       }
       const titleNode = section.querySelector('h1, h2, h3, h4, h5')
+      if (!titleNode) {
+        return
+      }
       const title = titleNode.textContent
       const anchor = titleNode.id || canonicalizeTitle(title)
       const level = parseInt(titleNode.tagName.charAt(1)) - 1
       const sectionHeader = section.querySelector('.pcs-edit-section-header')
 
-      const content = '<div>' + modifyHtmlText(section.innerHTML) + '</div>'
+      const content = '<div>' + modifyHtmlText(section.innerHTML, lang) + '</div>'
 
       // new section when toclevel 1
       if (level === 1) {
@@ -76,6 +109,7 @@ export const getArticle = (lang, title) => {
       references[id] = ref
     }
 
+    const body = doc.querySelector('body')
     const result = {
       contentLang: getMeta('content-language', 'http-equiv'),
       namespace: parseInt(getMeta('mw:pageNamespace'), 10),
@@ -84,7 +118,7 @@ export const getArticle = (lang, title) => {
       infobox,
       toc,
       references,
-      dir: doc.querySelector('body').getAttribute('dir')
+      dir: (body && body.getAttribute('dir')) || 'ltr'
     }
 
     return result

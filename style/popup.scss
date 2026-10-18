@@ -1,0 +1,33 @@
+.popup {
+	z-index: 100;
+
+	.shader {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: $softkeysHeight;
+		left: 0;
+		background-color: var( --w-scrim );
+	}
+
+	.popup-content {
+		overflow: hidden;
+		position: absolute;
+		max-height: 80vh;
+		right: 0;
+		bottom: $softkeysHeight;
+		left: 0;
+		background-color: var( --w-canvas );
+		border-top: 1px solid var( --w-border );
+		border-top-left-radius: var( --w-r-lg );
+		border-top-right-radius: var( --w-r-lg );
+		box-shadow: var( --w-shadow-overlay );
+
+		&.fullscreen {
+			max-height: unset;
+			top: 0;
+			border-radius: 0;
+			box-shadow: none;
+		}
+	}
+}

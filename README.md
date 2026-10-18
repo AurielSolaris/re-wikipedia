@@ -1,70 +1,108 @@
-[![CircleCI](https://circleci.com/gh/wikimedia/wikipedia-kaios/tree/main.svg?style=svg)](https://circleci.com/gh/wikimedia/wikipedia-kaios/tree/main)
+# re-wikipedia
 
-[![wikipedia-kaios](https://img.shields.io/endpoint?url=https://dashboard.cypress.io/badge/detailed/7izdto&style=flat&logo=cypress)](https://dashboard.cypress.io/projects/7izdto/runs)
-# Wikipedia KaiOS 
+An unofficial, from-scratch **custom web UI for reading Wikipedia**, inspired by
+the discontinued [Wikipedia KaiOS app](https://github.com/wikimedia/wikipedia-kaios)
+by the Wikimedia Foundation. It keeps the keypad/softkey driven reading
+experience of the original, and adds a modern, responsive web layout.
 
-The official Wikipedia KaiOS app. [KaiOS](https://developer.kaiostech.com/) is a web-based mobile operating system that enables a new category of smart feature phones, a successor of the discontinued Firefox OS.
+> **Not affiliated with Wikimedia.** This is an independent project. It is not
+> endorsed by, sponsored by, or connected to the Wikimedia Foundation. It reads
+> public content through the Wikipedia/Wikimedia APIs, which is available under
+> [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) unless noted
+> otherwise. "Wikipedia" and the Wikipedia marks belong to the Wikimedia
+> Foundation.
 
-The Wikipedia KaiOS app is built with [Preact](https://github.com/preactjs/preact), we use [Cypress](https://github.com/cypress-io/cypress) for testing, and [Translatewiki](https://github.com/wikimedia/translatewiki) for translations. Tasks and issues are tracked on [Phabricator](https://phabricator.wikimedia.org/project/profile/4305/).
+- **Web app:** https://wiki-unofficial.vercel.app
+- **Source:** https://github.com/AurielSolaris/re-wikipedia
 
-## Installation requirements (for macOS)
+## What this is
 
-* Make sure git is installed: `brew install git`
-* Make sure node is installed: `node -v` or `brew install node`
-* Make sure npm is installed: `npm -v` or `brew install npm`
-* Make sure the [Firefox browser is installed](https://www.mozilla.org/en-US/firefox/new/)
+A hand-built rendering layer for Wikipedia: the app fetches article HTML/JSON
+from the public Wikimedia APIs and renders it with its own UI instead of using
+the upstream app. Highlights:
 
-## To run this app in Firefox
+- **Reading-focused UI** built from GitHub Primer light/dark design tokens,
+  WCAG AA contrast, visible focus rings and reduced-motion support.
+- **Keyboard and softkey navigation** (KaiOS friendly) *plus* an optional
+  **touch and click** mode so pointers work everywhere, toggleable in Settings.
+- **Responsive by design**: works from a 240px KaiOS feature phone up to
+  WUXGA (1920×1200) desktops. Apple devices supported (safe-area insets,
+  `apple-mobile-web-app` meta, home-screen icon).
+- **SEO and sharing**: proper meta tags, Open Graph, Twitter card, canonical
+  URL, JSON-LD, `robots.txt` and `sitemap.xml`.
+- **Works offline-first where possible**: cached API responses and offline
+  states.
 
-### Clone the repository (only the first time)
+## Stack
 
-1. Create a directory for code: `mkdir ~/code && cd ~/code`
-2. Download the app source repository: `git clone https://github.com/wikimedia/wikipedia-kaios.git`
+| Concern | Choice |
+| --- | --- |
+| Package manager / runtime | **Bun** |
+| Bundler | **Vite 8** (rolldown) + `@vitejs/plugin-legacy` |
+| Legacy target | Firefox 37 (KaiOS) via the legacy plugin |
+| UI | **Preact 10**, migrating incrementally to **ReScript 12 + React 19** islands |
+| Styles | **SCSS** with design tokens (no Tailwind) |
+| i18n | `banana-i18n` — `en`, `hi`, `bn`, `he`, `ru`, `ja` (+ `qqq` docs) |
+| Icons | Inline [Lucide](https://lucide.dev) SVGs (ISC), no icon dependency |
+| Web hosting | **Vercel** (Bun build, static `dist/`) |
 
-### Open the app on your computer
-1. Make sure you are in the source directory: `cd wikipedia-kaios`
-2. Downloading the latest code: `git pull`
-3. Install app dependencies: `npm install`
-4. Build the app: `npm run dev`
+Cypress and webpack have been removed.
 
-Now the app is running on your computer at http://127.0.0.1:8080  in Firefox. You can open the [Firefox Developer Tools](https://developer.mozilla.org/en-US/docs/Tools) and use the [Responsive Design Mode](https://developer.mozilla.org/en-US/docs/Tools/Responsive_Design_Mode) to interact with the app in a more appropiate setting.
+## Getting started
 
-## To run this app on a device
+Requires [Bun](https://bun.sh) and (for the KaiOS device workflow) `adb`.
 
-### Clone the repository (if you haven't done this alredy)
+```sh
+bun install
+bun run dev        # dev server (Vite)
+bun run build      # production build: modern bundle + KaiOS legacy bundle
+bun run preview    # serve the built dist/ locally
+```
 
-1. Create a directory for code: `mkdir ~/code && cd ~/code`
-2. Download the app source repository: `git clone https://github.com/wikimedia/wikipedia-kaios.git`
-3. Go to the app source: `cd wikipedia-kaios`
+Other useful scripts:
 
-### Build the app
-1. Install app dependencies: `npm install`
+```sh
+bun run res:watch  # ReScript compiler in watch mode
+bun run stats      # cloc migration progress (Preact -> ReScript)
+bun run banana     # i18n key/locale consistency check
+bun run deploy     # build and push to a connected KaiOS device via adb
+```
 
-### Connect your device
-1. Connect your device to your computer using a USB cable
-2. Enable debug mode on the device by typing: `*#*#33284#*#*`
-3. Check that adb is running and sees your device: `adb devices`
+## Running in a browser
 
-### Deploy the app to the device
-1. Deploy to device, this will take a few minutes: `npm run deploy`
+```sh
+bun run dev
+```
 
-The Wikipedia app should be running on your device now.
+Open the printed local URL. Use the browser's responsive design mode with a
+small viewport (e.g. 240×320) to approximate a KaiOS device, or a large one
+(1920×1200) to see the desktop layout.
 
-## To run the Cypress tests
+## Running on a KaiOS device
 
-### Run a test server in one terminal window or tab
-`npm install && npm run build && npm run dev`
+1. Connect the device over USB and enable debug mode: `*#*#33284#*#*`
+2. Confirm it is visible: `adb devices`
+3. Deploy: `bun run deploy`
 
-### On a different tab: to run headlessly
-`npm test`
+## Touch and click support
 
-### On a different tab: to open cypress and run inside cypress
-`npm run cypress:open`
+The app is keypad-first. On pointers (mouse or touchscreen) it enables tap and
+click interactions automatically on first run, and you can turn them on or off
+at any time from **Settings → Touch and click**. When enabled, tapping a list
+row, an in-article link, a figure or a softkey performs the same action as the
+center key. The preference is stored in `localStorage`.
 
-## To keep app updated with latest version
+## Deploying the web app
 
-1. Make sure you are in the source directory: `cd ~/code/wikipedia-kaios`
-2. Pull the latest changes: `git pull`
-3. Install latest dependencies: `npm install`
-4. Rebuild the app: `npm run build`
-5. Redeploy the app: `npm run deploy`
+The web build is deployed to Vercel as a static site (`vercel.json` runs
+`bun install` + `bun run build` and serves `dist/`).
+
+```sh
+bunx vercel --prod
+```
+
+## Documentation
+
+- `MAP.txt` — file-by-file map of the repository.
+- `MIGRATION.md` — Preact → ReScript migration status (via `cloc`).
+- `i18n/` — translation files; `qqq.json` documents each message.

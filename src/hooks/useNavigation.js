@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'preact/hooks'
 import { useSoftkey } from 'hooks'
+import { useTouchSupport } from './useTouchSupport'
 
 export const useNavigation = (origin, containerRef, listRef, axis, elementsSelector = '[data-selectable]') => {
   const [current, setCurrent] = useState({ type: null, index: 0, key: null })
+  const [touchSupport] = useTouchSupport()
 
   const getAllElements = () => containerRef.current.querySelectorAll(elementsSelector)
 
@@ -86,6 +88,38 @@ export const useNavigation = (origin, containerRef, listRef, axis, elementsSelec
       listRef.current.scrollTop -= (containerRect.top - rect.top)
     }
   })
+
+  // Touch / click support: tapping a selectable element selects it and then
+  // triggers the very same action as the center key. We do that by dispatching
+  // a synthetic Enter keydown, which the <Softkey> bar already routes to the
+  // current view's onKeyCenter handler.
+  useEffect(() => {
+    if (!touchSupport || !containerRef.current) {
+      return
+    }
+    const node = containerRef.current
+    const onClick = event => {
+      const target = event.target
+      if (!target || typeof target.closest !== 'function') return
+      if (target.nodeName === 'INPUT' || target.nodeName === 'TEXTAREA' || target.isContentEditable) return
+
+      const element = target.closest(elementsSelector)
+      if (!element || !node.contains(element)) return
+
+      const allElements = getAllElements()
+      const index = Array.prototype.indexOf.call(allElements, element)
+      if (index < 0) return
+
+      event.preventDefault()
+      selectElement(element, index)
+
+      if (typeof KeyboardEvent !== 'undefined') {
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+      }
+    }
+    node.addEventListener('click', onClick)
+    return () => node.removeEventListener('click', onClick)
+  }, [touchSupport, elementsSelector])
 
   return [current, setNavigation, getCurrent, getAllElements, navigateNext, navigatePrevious]
 }

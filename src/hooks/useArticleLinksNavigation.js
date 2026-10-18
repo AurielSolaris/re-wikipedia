@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'preact/hooks'
 import { useSoftkey, usePopup, useI18n } from 'hooks'
-import { ArticlePreview } from 'components'
+import { useTouchSupport } from './useTouchSupport'
+import { ArticlePreview } from '../components/ArticlePreview'
 import {
   viewport, INTERWIKI_KEYS, normalizeTitle, getDirection,
   openExternal
@@ -74,6 +75,36 @@ export const useArticleLinksNavigation = (
 
   const actualLinkHandlers = Object.assign({},
     defaultLinkHandlers, linkHandlers)
+
+  // Touch / click support: tapping an in-article link, figure or gallery box
+  // runs the same handler the center key would run.
+  const [touchSupport] = useTouchSupport()
+
+  useEffect(() => {
+    if (!touchSupport || !contentRef.current) {
+      return
+    }
+    const node = contentRef.current
+    const onClick = event => {
+      const target = event.target
+      if (!target || typeof target.closest !== 'function') return
+      if (target.nodeName === 'INPUT' || target.nodeName === 'TEXTAREA' || target.isContentEditable) return
+
+      const link = target.closest(SUPPORTED_LINKS)
+      if (!link || !node.contains(link)) return
+
+      event.preventDefault()
+      setCurrentLink(link)
+
+      const clickEvent = makeLinkClickEvent(link)
+      const handler = clickEvent && actualLinkHandlers[clickEvent.type]
+      if (handler) {
+        handler(clickEvent)
+      }
+    }
+    node.addEventListener('click', onClick)
+    return () => node.removeEventListener('click', onClick)
+  }, [touchSupport, links])
 
   useSoftkey(origin, {
     [dir === 'rtl' ? 'onKeyFixedArrowRight' : 'onKeyFixedArrowLeft']: () => {

@@ -1,7 +1,8 @@
 import { h } from 'preact'
 import { useRef, useEffect, useState } from 'preact/hooks'
 import { useNavigation, useI18n, useSoftkey, useSearchArticleLanguage } from 'hooks'
-import { ListView, Loading } from 'components'
+import { ListView } from './ListView'
+import { Loading } from './Loading'
 import { goto } from 'utils'
 
 export const ArticleLanguage = ({ lang, title, close, closeAll }) => {
