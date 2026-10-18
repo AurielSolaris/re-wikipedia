@@ -1,15 +1,12 @@
 // Touch / click support toggle.
 //
 // The app is primarily keypad-driven (KaiOS). On pointer devices (mouse or
-// touchscreen) we let people tap items directly. The preference is stored in
-// localStorage; on first run it is auto-detected from the pointer capabilities
-// so desktop and touch users get it out of the box while keypad devices keep
-// their key-driven navigation.
+// touchscreen) we let people tap items directly. State lives in the ReScript
+// preference store (src/res/Preference.res); on first run it is auto-detected
+// from the pointer capabilities so desktop and touch users get it out of the
+// box while keypad devices keep their key-driven navigation.
 
-const STORAGE_KEY = 'touchSupport'
-
-let cached = null
-let listeners = []
+import { createPreference } from './preference'
 
 const detect = () => {
   try {
@@ -39,37 +36,22 @@ const applyAttribute = enabled => {
   }
 }
 
-export const getTouchSupport = () => {
-  if (cached === null) {
-    let stored = null
-    try {
-      stored = window.localStorage.getItem(STORAGE_KEY)
-    } catch (e) {
-      // localStorage may be unavailable; fall back to detection
-    }
-    cached = stored === null ? detect() : stored === 'true'
-  }
-  return cached
-}
+const preference = createPreference({
+  key: 'touchSupport',
+  values: [true, false],
+  defaultValue: detect,
+  parse: value => value === 'true',
+  serialize: value => (value ? 'true' : 'false')
+})
 
-export const setTouchSupport = enabled => {
-  const next = !!enabled
-  cached = next
-  try {
-    window.localStorage.setItem(STORAGE_KEY, next ? 'true' : 'false')
-  } catch (e) {
-    // ignore quota / privacy mode failures
-  }
-  applyAttribute(next)
-  listeners.slice().forEach(listener => listener(next))
-}
+// Reflect the preference on <html> whenever it changes.
+preference.subscribe(applyAttribute)
 
-export const subscribeTouchSupport = listener => {
-  listeners.push(listener)
-  return () => {
-    listeners = listeners.filter(current => current !== listener)
-  }
-}
+export const getTouchSupport = preference.get
+
+export const setTouchSupport = enabled => preference.set(!!enabled)
+
+export const subscribeTouchSupport = preference.subscribe
 
 export const initTouchSupport = () => {
   const enabled = getTouchSupport()

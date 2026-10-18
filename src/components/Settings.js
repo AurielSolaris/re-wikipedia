@@ -11,7 +11,7 @@ import {
   LanguagesIcon, TouchIcon, FeedbackIcon, InfoIcon, AppIcon, PrivacyIcon,
   SunIcon, MoonIcon, SunMoonIcon
 } from './icons'
-import { goto, openExternal, nextTheme } from 'utils'
+import { goto, openExternal, nextTheme, getTheme, getTouchSupport } from 'utils'
 
 export const Settings = () => {
   const containerRef = useRef()
@@ -60,20 +60,23 @@ export const Settings = () => {
     center: i18n('centerkey-select'),
     onKeyCenter,
     onKeyBackspace: () => goto.back()
-  })
+  }, [theme, touchSupport])
 
-  const [, setNavigation, getCurrent] = useNavigation('Settings', containerRef, listRef, 'y')
+  const [, setNavigation, getCurrent] = useNavigation('Settings', containerRef, listRef, 'grid')
 
   useEffect(() => {
     setNavigation(0)
   }, [])
 
+  // Read the preference from the store itself: the softkey config below is only
+  // re-dispatched when a preference actually changes, so handlers closing over
+  // the rendered values would go stale and could only ever apply one change.
   const onTouchSupportToggle = () => {
-    setTouchSupport(!touchSupport)
+    setTouchSupport(!getTouchSupport())
   }
 
   const onThemeToggle = () => {
-    setTheme(nextTheme(theme))
+    setTheme(nextTheme(getTheme()))
   }
 
   const themeIcon = theme === 'dark' ? MoonIcon : theme === 'light' ? SunIcon : SunMoonIcon

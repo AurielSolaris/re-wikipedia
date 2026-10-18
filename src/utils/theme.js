@@ -1,19 +1,25 @@
 // Theme preference: 'auto' (follow the OS), 'light' or 'dark'.
 //
-// The colour tokens in style/tokens.scss already expose `[data-theme='light']`
-// and `[data-theme='dark']` overrides that win over the prefers-color-scheme
-// media query, so all this module has to do is keep that attribute, the
-// `color-scheme` property and the browser chrome (`theme-color`) in sync.
+// State lives in the ReScript preference store (src/res/Preference.res); all
+// this module has to do is keep the painted result in sync: the `data-theme`
+// attribute, the `color-scheme` property and the browser chrome
+// (`theme-color`). The colour tokens in style/tokens.scss already expose
+// `[data-theme='light'|'dark']` overrides that win over the
+// prefers-color-scheme media query.
 
-const STORAGE_KEY = 'theme'
+import { createPreference } from './preference'
 
 export const THEMES = ['auto', 'light', 'dark']
 
 const LIGHT_COLOR = '#ffffff'
 const DARK_COLOR = '#0d1117'
 
-let cached = null
-let listeners = []
+const preference = createPreference({
+  key: 'theme',
+  values: THEMES,
+  defaultValue: 'auto'
+})
+
 let metaCache = null
 
 const prefersDark = () => {
@@ -24,18 +30,7 @@ const prefersDark = () => {
   }
 }
 
-export const getTheme = () => {
-  if (cached === null) {
-    let stored = null
-    try {
-      stored = window.localStorage.getItem(STORAGE_KEY)
-    } catch (e) {
-      // localStorage unavailable; fall back to the system preference
-    }
-    cached = THEMES.indexOf(stored) !== -1 ? stored : 'auto'
-  }
-  return cached
-}
+export const getTheme = preference.get
 
 // The theme that is actually painted, resolving 'auto' against the OS.
 export const resolveTheme = theme => {
@@ -96,26 +91,12 @@ const apply = () => {
   return resolved
 }
 
-export const setTheme = theme => {
-  if (THEMES.indexOf(theme) === -1) {
-    return
-  }
-  cached = theme
-  try {
-    window.localStorage.setItem(STORAGE_KEY, theme)
-  } catch (e) {
-    // ignore quota / privacy mode failures
-  }
-  apply()
-  listeners.slice().forEach(listener => listener(theme))
-}
+// Repaint whenever the preference changes, exactly like any component.
+preference.subscribe(apply)
 
-export const subscribeTheme = listener => {
-  listeners.push(listener)
-  return () => {
-    listeners = listeners.filter(current => current !== listener)
-  }
-}
+export const setTheme = preference.set
+
+export const subscribeTheme = preference.subscribe
 
 export const initTheme = () => {
   apply()
@@ -124,8 +105,7 @@ export const initTheme = () => {
     const onChange = () => {
       // Only 'auto' follows the OS; an explicit theme stays put.
       if (getTheme() === 'auto') {
-        apply()
-        listeners.slice().forEach(listener => listener(getTheme()))
+        preference.notify()
       }
     }
     if (query.addEventListener) {
