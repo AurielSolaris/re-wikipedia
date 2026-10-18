@@ -9,8 +9,14 @@
 // always acceptable.
 // https://www.mediawiki.org/wiki/Common_thumbnail_sizes
 
-/** Standard Wikimedia thumbnail widths, in pixels. */
-export const THUMB_STEPS = [20, 40, 60, 120, 250, 330, 500, 960, 1280, 1920, 3840]
+import { steps, snap } from '../res/ThumbSize.res.mjs'
+
+// Standard Wikimedia thumbnail widths, in pixels. The step list and the
+// rounding live in ReScript (src/res/ThumbSize.res).
+export const THUMB_STEPS = steps
+
+/** Rounds a width up to the smallest standard thumbnail step. */
+export const snapToThumbStep = snap
 
 // upload.wikimedia.org or thumb.wikimedia.org, with the /wikipedia/<repo>/
 // prefix and optional /thumb/ plus size segment, so both originals and already
@@ -18,16 +24,6 @@ export const THUMB_STEPS = [20, 40, 60, 120, 250, 330, 500, 960, 1280, 1920, 384
 const UPLOAD_URL = /^(https?:\/\/[^/]*?\.?wikimedia\.org)(\/wikipedia\/[^/]+\/)(?:thumb\/)?([0-9a-f])\/([0-9a-f]{2})\/([^/]+?)(?:\/\d+px-[^/]+)?$/i
 
 const NEEDS_PNG_THUMB = /\.(svg|tiff?)$/i
-
-/** Rounds a width up to the smallest standard thumbnail step. */
-export const snapToThumbStep = width => {
-  for (const step of THUMB_STEPS) {
-    if (step >= width) {
-      return step
-    }
-  }
-  return THUMB_STEPS[THUMB_STEPS.length - 1]
-}
 
 export const fixImgSrc = (originalSrc, lang) => {
   if (!originalSrc) {
